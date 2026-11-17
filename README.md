@@ -3,9 +3,9 @@
   <img alt="Kenzo O'Bryan, developer" src="assets/header-light.svg" width="100%">
 </picture>
 
-Hi, I'm Kenzo. I work as a fullstack developer, and in the evenings I build my own tools, mostly around LLMs.
+Hi, I'm Kenzo, a fullstack developer. Most of what I write is TypeScript and Node.js, with Python, Flutter or C when a project needs it.
 
-Getting a demo to work is usually the quick part. I spend more time on what happens after, when the API starts returning 429s in the middle of a request, or when the agent gives a confident answer that isn't anywhere in the docs. I like writing the code that handles that, and then checking that it really does.
+Outside of work I build things mainly to understand them. I wrote a shell to see what actually happens between `fork` and `exec`, a small game engine to get a game loop right, and a few tools around the APIs I use every day.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/night-dark.svg">
@@ -14,47 +14,25 @@ Getting a demo to work is usually the quick part. I spend more time on what happ
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/board-dark.svg">
-  <img alt="Split-flap board cycling through 429 TOO MANY REQUESTS, 503 UNAVAILABLE, RETRY IN 500 MS, FALLBACK: OPENAI, 200 OK" src="assets/board-light.svg" width="100%">
+  <img alt="Split-flap board cycling through SEGMENTATION FAULT, 3 TESTS FAILING, FIXING..., ALL TESTS PASSED, DEPLOYED" src="assets/board-light.svg" width="100%">
 </picture>
-
-## resilient-llm
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/resilience-dark.svg">
-  <img alt="Animation: resilient-llm retries after errors from Anthropic, then switches to OpenAI" src="assets/resilience-light.svg" width="100%">
-</picture>
-
-It sits between your code and the model's API. When a provider fails, it waits, retries, counts the failures, and moves on to the next provider if things don't recover. Your app gets its response and doesn't have to know any of that happened.
-
-```bash
-npm install @kenzoobryan27/resilient-llm
-```
 
 ## Projects
 
 <p>
-<a href="https://github.com/kenzoob/Resilient-llm"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-resilient-dark.svg"><img alt="resilient-llm" src="assets/card-resilient-light.svg" width="49%"></picture></a>
-<a href="https://github.com/kenzoob/agent-evals"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-evals-dark.svg"><img alt="agent-evals" src="assets/card-evals-light.svg" width="49%"></picture></a>
-<a href="https://github.com/kenzoob/github-triage-mcp"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-mcp-dark.svg"><img alt="github-triage-mcp" src="assets/card-mcp-light.svg" width="49%"></picture></a>
+<a href="https://github.com/kenzoob/my-engine"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-engine-dark.svg"><img alt="my-engine" src="assets/card-engine-light.svg" width="49%"></picture></a>
+<a href="https://github.com/kenzoob/minishell"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-shell-dark.svg"><img alt="minishell" src="assets/card-shell-light.svg" width="49%"></picture></a>
+<a href="https://github.com/kenzoob/playvibes"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-vibes-dark.svg"><img alt="playvibes" src="assets/card-vibes-light.svg" width="49%"></picture></a>
 <a href="https://github.com/kenzoob/Serp-compare"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-serp-dark.svg"><img alt="serp-compare" src="assets/card-serp-light.svg" width="49%"></picture></a>
+<a href="https://github.com/kenzoob/Resilient-llm"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-resilient-dark.svg"><img alt="resilient-llm" src="assets/card-resilient-light.svg" width="49%"></picture></a>
+<a href="https://github.com/kenzoob/github-triage-mcp"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-mcp-dark.svg"><img alt="github-triage-mcp" src="assets/card-mcp-light.svg" width="49%"></picture></a>
 </p>
-
-## Testing my own agent
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/evals-story-dark.svg">
-  <img alt="agent-evals results, v1 vs v2" src="assets/evals-story-light.svg" width="100%">
-</picture>
-
-I made my RAG agent's prompt stricter so it would stop making things up. That part worked: on off-topic questions it now says "I don't know" every time. But it also got much worse at normal questions, going from 95% correct to 60%, and half of those failures are empty answers. I haven't found out why yet.
-
-If I had only looked at the hallucination numbers, I would have shipped v2 thinking it was an improvement.
 
 <br>
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/graph-dark.svg">
-  <img alt="Animated git graph: main, an evals/v2 branch and a fix/empty-answers branch merging back in" src="assets/graph-light.svg" width="100%">
+  <img alt="Animated git graph: main and two feature branches merging back in" src="assets/graph-light.svg" width="100%">
 </picture>
 
 <picture>

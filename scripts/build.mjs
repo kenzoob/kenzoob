@@ -116,17 +116,18 @@ write('header', (t) => {
 <text x="60" y="72" class="mono up" font-size="14" fill="${t.violet}" style="animation-delay:.1s">@kenzoob</text>
 <text x="54" y="168" class="serif ink up" font-size="82" style="animation-delay:.25s">Kenzo O'Bryan</text>
 <line x1="60" y1="196" x2="780" y2="196" class="rule"/>
-<text x="60" y="236" class="sans muted up" font-size="20" style="animation-delay:.6s">Fullstack developer. In the evenings I build tools for LLM apps,</text>
-<text x="60" y="264" class="sans muted up" font-size="20" style="animation-delay:.7s">mostly the code that runs when the model or the API fails.</text>
+<text x="60" y="236" class="sans muted up" font-size="20" style="animation-delay:.6s">Fullstack developer, mostly TypeScript and Node.js. On the side,</text>
+<text x="60" y="264" class="sans muted up" font-size="20" style="animation-delay:.7s">I build things to see how they work under the hood.</text>
 <g class="up" style="animation-delay:.9s">
 <rect x="60" y="298" width="720" height="56" rx="10" class="box"/>
-<text x="80" y="332" class="mono" font-size="15" fill="${t.pink}">working on ›</text>
+<text x="80" y="332" class="mono" font-size="15" fill="${t.pink}">lately ›</text>
 </g>
 ${typer('ty', [
-    'a circuit breaker for LLM API calls',
-    'evals that catch my RAG agent making things up',
-    'an MCP server for GitHub issues, read-only by default',
-  ], { x: 196, y: 332, cw: 9.05, size: 15, cls: 'mono ink" font-size="15', t })}
+    'a UNIX shell in C, pipes and redirections included',
+    'a small 2D game engine for the browser',
+    'a playlist sharing app on the Spotify API',
+    'a retry and fallback layer for API calls',
+  ], { x: 162, y: 332, cw: 9.05, size: 15, cls: 'mono ink" font-size="15', t })}
 <text x="60" y="412" class="mono faint up" font-size="13" style="animation-delay:1.1s">${['TypeScript', 'Node.js', 'Python', 'Flutter', 'C', 'FastAPI', 'React', 'Docker'].map((s, i) => `<tspan fill="${[t.blue, t.ok, t.yellow, t.cyan, t.violet, t.pink, t.blue, t.orange][i]}">${s}</tspan>`).join('  ·  ')}</text>
 <g class="grid">${grid}</g>
 <g class="dots">${dots}</g>
@@ -220,7 +221,7 @@ ${[1100, 1109, 1118].map((x, i) => `<path d="M${x} 246 q-5 -7 0 -14 q5 -7 0 -14"
 // ================= 3. Tableau à volets =================
 write('board', (t) => {
   const N = 22, CW = 46, CH = 66, G = 5, D = 2.4;
-  const msgs = ['429 TOO MANY REQUESTS', '503 UNAVAILABLE', 'RETRY IN 500 MS', 'FALLBACK: OPENAI', '200 OK'];
+  const msgs = ['SEGMENTATION FAULT', '3 TESTS FAILING', 'FIXING...', 'ALL TESTS PASSED', 'DEPLOYED'];
   const T = D * msgs.length;
   const W = 1200, H = 116, y0 = 24;
   const x0 = (W - (N * CW + (N - 1) * G)) / 2;
@@ -247,71 +248,7 @@ write('board', (t) => {
   const css = `.cell{fill:${t.card};stroke:${t.line}}
 .fl{fill:${t.line};opacity:0;transform-box:fill-box;transform-origin:bottom;animation:fl ${D}s linear infinite}
 @keyframes fl{0%{opacity:1;transform:scaleY(1)}7%{opacity:1;transform:scaleY(0)}7.1%,100%{opacity:0;transform:scaleY(0)}}`;
-  return svg(W, H, t, css, cells, 'Split-flap board: 429 TOO MANY REQUESTS, 503 UNAVAILABLE, RETRY IN 500 MS, FALLBACK: OPENAI, 200 OK');
-});
-
-// ================= 4. resilient-llm en action =================
-write('resilience', (t) => {
-  const W = 1200, H = 420, T = 12;
-  const pkt = (id, x1, y1, x2, y2, a, b, col) => {
-    const dx = x2 - x1, dy = y2 - y1;
-    return { css: `@keyframes ${id}{0%,${a - 0.01}%{opacity:0;transform:translate(0,0)}${a}%{opacity:1;transform:translate(0,0)}${b}%{opacity:1;transform:translate(${dx}px,${dy}px)}${b + 0.01}%,100%{opacity:0;transform:translate(${dx}px,${dy}px)}}#${id}{animation:${id} ${T}s linear infinite}`,
-      el: `<circle id="${id}" cx="${x1}" cy="${y1}" r="6" fill="${col || t.blue}"/>` };
-  };
-  const win = (id, a, b) => `@keyframes ${id}{0%,${a - 0.01}%{opacity:0}${a}%,${b}%{opacity:1}${b + 0.01}%,100%{opacity:0}}.${id}{opacity:0;animation:${id} ${T}s linear infinite}`;
-  const A = [250, 175], R1 = [440, 175], R2 = [710, 175], AN = [920, 110], OA = [920, 240];
-  const ps = [
-    pkt('p1', ...A, ...R1, 2, 8), pkt('p2', ...R2, ...AN, 9, 15),
-    pkt('p3', ...R2, ...AN, 27, 33), pkt('p4', ...R2, ...AN, 44, 50),
-    pkt('p5', ...R2, ...OA, 58, 64), pkt('p6', ...OA, ...R2, 67, 73, t.ok), pkt('p7', ...R1, ...A, 74, 80, t.ok),
-  ];
-  const css = `
-.box{fill:${t.card};stroke:${t.line};stroke-width:1.2}
-.wire{stroke:${t.line};stroke-width:1.5;fill:none}
-.wire.d{stroke-dasharray:5 5;animation:flow 1s linear infinite}
-@keyframes flow{to{stroke-dashoffset:-10}}
-${ps.map((p) => p.css).join('\n')}
-${win('b1', 15, 24)}${win('b2', 33, 41)}${win('b3', 50, 57)}${win('b4', 64, 96)}
-${win('l1', 16, 96)}${win('l2', 34, 96)}${win('l3', 51, 96)}${win('l4', 65, 96)}
-${win('f0', 0, 15)}${win('f1', 15.01, 33)}${win('f2', 33.01, 50)}${win('f3', 50.01, 96)}
-${win('done', 80, 96)}
-@keyframes dim{0%,52%{opacity:1}54%,95%{opacity:.35}100%{opacity:1}}.dim{animation:dim ${T}s linear infinite}
-`;
-  const badge = (cls, x, y, txt, color) => `<g class="${cls}"><rect x="${x}" y="${y - 15}" width="52" height="22" rx="11" fill="none" stroke="${color}"/><text x="${x + 26}" y="${y + 1}" text-anchor="middle" class="mono" font-size="13" fill="${color}">${txt}</text></g>`;
-  const logs = [
-    ['→ anthropic', '429', 'try 1', 'wait ~500 ms, then retry', t.ko],
-    ['→ anthropic', '503', 'try 2', 'wait ~1 s, then retry', t.ko],
-    ['→ anthropic', '503', 'try 3', 'out of retries, move to the next provider', t.ko],
-    ['→ openai', '200', 'ok', 'response goes back to the app', t.ok],
-  ];
-  const body = `
-<text x="60" y="44" class="mono faint" font-size="13">resilient-llm  ·  example with retries: 2, failureThreshold: 5</text>
-<text x="60" y="74" class="sans ink" font-size="21">Anthropic keeps failing, your request still gets an answer</text>
-<path d="M${A[0]} ${A[1]}H${R1[0]}" class="wire"/>
-<path d="M${R2[0]} ${R2[1]}L${AN[0]} ${AN[1]}" class="wire"/>
-<path d="M${R2[0]} ${R2[1]}L${OA[0]} ${OA[1]}" class="wire d" style="stroke:${t.ok}"/>
-<rect x="60" y="150" width="190" height="50" rx="10" class="box"/>
-<text x="155" y="181" text-anchor="middle" class="mono ink" font-size="15">your app</text>
-<text x="155" y="226" text-anchor="middle" class="mono done" font-size="13" fill="${t.ok}">✓ got a response</text>
-<rect x="440" y="140" width="270" height="70" rx="12" class="box" style="stroke:${t.violet};stroke-width:2"/>
-<text x="575" y="170" text-anchor="middle" class="mono" fill="${t.violet}" font-size="16">resilient-llm</text>
-<g class="mono faint" font-size="12" text-anchor="middle">
-<text x="575" y="193" class="f0">failures 0/5   circuit closed</text>
-<text x="575" y="193" class="f1">failures 1/5   circuit closed</text>
-<text x="575" y="193" class="f2">failures 2/5   circuit closed</text>
-<text x="575" y="193" class="f3">failures 3/5   falling back</text>
-</g>
-<g class="dim"><rect x="920" y="85" width="220" height="50" rx="10" class="box"/>
-<text x="942" y="115" class="mono ink" font-size="15">Anthropic</text></g>
-${badge('b1', 1076, 115, '429', t.ko)}${badge('b2', 1076, 115, '503', t.ko)}${badge('b3', 1076, 115, '503', t.ko)}
-<rect x="920" y="215" width="220" height="50" rx="10" class="box"/>
-<text x="942" y="245" class="mono ink" font-size="15">OpenAI</text>
-${badge('b4', 1076, 245, '200', t.ok)}
-${ps.map((p) => p.el).join('')}
-<line x1="60" y1="290" x2="1140" y2="290" stroke="${t.line}"/>
-${logs.map(([to, code, n, msg, col], i) => `<text y="${322 + i * 24}" class="mono l${i + 1}" font-size="13"><tspan x="60" fill="${t.blue}">${esc(to)}</tspan><tspan x="200" fill="${col}">${code}</tspan><tspan x="250" class="faint">${n}</tspan><tspan x="330" class="ink">${esc(msg)}</tspan></text>`).join('\n')}
-`;
-  return svg(W, H, t, css, body, 'Animation: resilient-llm retries, then falls back to another provider');
+  return svg(W, H, t, css, cells, 'Split-flap board: SEGMENTATION FAULT, 3 TESTS FAILING, FIXING..., ALL TESTS PASSED, DEPLOYED');
 });
 
 // ================= 5. Cartes de projets =================
@@ -356,28 +293,6 @@ write('card-resilient', (t) => card('resilient', t, {
 <line x1="36" y1="152" x2="76" y2="152" stroke="${t.violet}" stroke-width="2.5" stroke-linecap="round" class="sw"/>
 <text x="90" y="156" class="mono faint" font-size="11">breaker</text>`,
 }));
-
-// agent-evals : 30 cas de test qui passent un à un (motif illustratif, pas les vrais résultats).
-write('card-evals', (t) => {
-  const fails = new Set([4, 9, 13, 17, 22, 27]);
-  let m = '';
-  for (let i = 0; i < 30; i++) {
-    const x = (i % 6) * 27, y = Math.floor(i / 6) * 27;
-    const d = r2(i * 0.11);
-    m += `<rect x="${x}" y="${y}" width="21" height="21" rx="4" fill="none" stroke="${t.line}"/>`;
-    if (fails.has(i)) m += `<g class="c" style="animation-delay:${d}s" stroke="${t.ko}" stroke-width="2" stroke-linecap="round"><line x1="${x + 6}" y1="${y + 6}" x2="${x + 15}" y2="${y + 15}"/><line x1="${x + 15}" y1="${y + 6}" x2="${x + 6}" y2="${y + 15}"/></g>`;
-    else m += `<rect x="${x + 4}" y="${y + 4}" width="13" height="13" rx="2" fill="${t.ok}" class="c" style="animation-delay:${d}s"/>`;
-  }
-  m += `<text x="0" y="158" class="mono faint" font-size="11">30 test cases, run in CI</text>`;
-  return card('evals', t, {
-    title: 'agent-evals',
-    lines: ['A RAG agent over the Node.js docs,', 'with 30 test cases to check whether', 'its answers can be trusted.'],
-    tags: 'TypeScript · LLM-as-judge · prompt injection · CI',
-    accent: t.ok,
-    css: `.c{opacity:0;animation:c 6s ease-out infinite}@keyframes c{0%{opacity:0}4%,80%{opacity:1}90%,100%{opacity:0}}`,
-    motif: m,
-  });
-});
 
 // github-triage-mcp : une requête normale traverse les 4 couches, une requête piégée est arrêtée.
 write('card-mcp', (t) => {
@@ -425,28 +340,63 @@ write('card-serp', (t) => {
   });
 });
 
-// ================= 6. Résultats des évals =================
-write('evals-story', (t) => {
-  const W = 1200, H = 300;
-  const rows = [['Correct answers', 95, 60], ['Correct citations', 55, 60], ['Says "I don\'t know" when off-topic', 0, 100], ['Prompt injections that got through (lower is better)', 0, 0]];
-  let b = '';
-  rows.forEach(([lab, v1, v2], i) => {
-    const y = 96 + i * 46;
-    b += `<text x="60" y="${y + 12}" class="sans ink" font-size="15">${esc(lab)}</text>`;
-    b += `<rect x="460" y="${y}" width="540" height="6" rx="3" fill="${t.line}" opacity=".6"/>`;
-    b += `<rect x="460" y="${y}" width="${Math.max(3, v1 * 5.4)}" height="6" rx="3" fill="${t.orange}" class="gr" style="animation-delay:${0.2 + i * 0.15}s"/>`;
-    b += `<rect x="460" y="${y + 10}" width="540" height="6" rx="3" fill="${t.line}" opacity=".6"/>`;
-    b += `<rect x="460" y="${y + 10}" width="${Math.max(3, v2 * 5.4)}" height="6" rx="3" fill="${t.violet}" class="gr" style="animation-delay:${0.35 + i * 0.15}s"/>`;
-    b += `<text x="1020" y="${y + 7}" class="mono" fill="${t.orange}" font-size="12">v1 ${v1}%</text><text x="1020" y="${y + 18}" class="mono" fill="${t.violet}" font-size="12">v2 ${v2}%</text>`;
+// my-engine : une partie de pong qui tourne toute seule.
+write('card-engine', (t) => {
+  const D = 4;
+  let m = `<rect x="0" y="0" width="170" height="150" rx="8" fill="none" stroke="${t.line}"/>`;
+  m += `<line x1="85" y1="8" x2="85" y2="142" stroke="${t.line}" stroke-width="2" stroke-dasharray="6 6"/>`;
+  m += `<text x="62" y="26" text-anchor="end" class="mono faint" font-size="14">3</text><text x="108" y="26" class="mono faint" font-size="14">2</text>`;
+  m += `<rect x="8" y="22" width="5" height="36" rx="2" fill="${t.pink}"><animate attributeName="y" dur="${D}s" repeatCount="indefinite" values="22;55;94;55;22"/></rect>`;
+  m += `<rect x="157" y="62" width="5" height="36" rx="2" fill="${t.violet}"><animate attributeName="y" dur="${D}s" repeatCount="indefinite" values="62;82;62;42;62"/></rect>`;
+  m += `<circle r="5" fill="${t.yellow}"><animateMotion dur="${D}s" repeatCount="indefinite" path="M18 40 L152 100 L18 112 L152 60 Z"/></circle>`;
+  return card('engine', t, {
+    title: 'my-engine',
+    lines: ['A small 2D game engine for the', 'browser: game loop, scenes, input', 'and canvas drawing. On npm.'],
+    tags: 'JavaScript · Canvas 2D · npm',
+    accent: t.pink,
+    motif: m,
   });
-  const css = `.gr{transform-box:fill-box;transform-origin:left;animation:gr 1.6s cubic-bezier(.2,.7,.2,1) both}@keyframes gr{from{transform:scaleX(0)}to{transform:scaleX(1)}}`;
-  const body = `
-<text x="60" y="44" class="mono faint" font-size="13">agent-evals  ·  30 cases  ·  gemini-3.1-flash-lite  ·  October 2026</text>
-<text x="60" y="70" class="sans ink" font-size="20">v1 = basic prompt, v2 = stricter prompt</text>
-${b}
-<text x="60" y="282" class="mono" fill="${t.orange}" font-size="12">▪ v1</text><text x="110" y="282" class="mono" fill="${t.violet}" font-size="12">▪ v2</text>
-`;
-  return svg(W, H, t, css, body, 'agent-evals results, v1 vs v2');
+});
+
+// minishell : une commande, et les données qui traversent le pipeline.
+write('card-shell', (t) => {
+  let m = `<rect x="0" y="0" width="170" height="150" rx="8" fill="none" stroke="${t.line}"/>`;
+  m += `<text x="10" y="24" class="mono" font-size="10.5"><tspan fill="${t.ok}">$</tspan><tspan fill="${t.ink}"> ls | grep .c | wc -l</tspan></text>`;
+  m += `<text x="10" y="42" class="mono muted" font-size="10.5">12</text>`;
+  [['ls', 8], ['grep', 63], ['wc', 118]].forEach(([n, x]) => {
+    m += `<rect x="${x}" y="68" width="44" height="24" rx="6" fill="none" stroke="${t.cyan}" stroke-width="1.5"/>`;
+    m += `<text x="${x + 22}" y="84" text-anchor="middle" class="mono ink" font-size="10.5">${n}</text>`;
+  });
+  m += `<path d="M53 80H62M108 80H117" stroke="${t.faint}" stroke-width="1.5"/>`;
+  m += `<circle r="3.5" fill="${t.cyan}"><animateMotion dur="2.4s" repeatCount="indefinite" path="M30 100 H140"/><animate attributeName="opacity" dur="2.4s" repeatCount="indefinite" values="0;1;1;0" keyTimes="0;.1;.9;1"/></circle>`;
+  m += `<text x="10" y="134" class="mono" font-size="10.5" fill="${t.ok}">$</text><rect x="20" y="125" width="6" height="11" fill="${t.ink}" class="cu"/>`;
+  return card('shell', t, {
+    title: 'minishell',
+    lines: ['A UNIX shell written in C, inspired', 'by tcsh: pipes, redirections, quotes,', 'aliases and a parser built on an AST.'],
+    tags: 'C · POSIX · fork / exec',
+    accent: t.cyan,
+    css: `.cu{animation:cu 1s steps(1) infinite}@keyframes cu{50%{opacity:0}}`,
+    motif: m,
+  });
+});
+
+// playvibes : un égaliseur.
+write('card-vibes', (t) => {
+  let m = `<linearGradient id="eq" gradientUnits="userSpaceOnUse" x1="0" y1="130" x2="0" y2="20"><stop offset="0" stop-color="${t.ok}"/><stop offset=".55" stop-color="${t.cyan}"/><stop offset="1" stop-color="${t.violet}"/></linearGradient>`;
+  for (let i = 0; i < 12; i++) {
+    const h = 30 + ((i * 37) % 80);
+    m += `<rect x="${4 + i * 14}" y="${130 - h}" width="9" height="${h}" rx="2" fill="url(#eq)" class="eq" style="animation-duration:${r2(0.7 + ((i * 13) % 7) / 10)}s;animation-delay:-${r2(i * 0.17)}s"/>`;
+  }
+  m += `<line x1="0" y1="134" x2="170" y2="134" stroke="${t.line}" stroke-width="1.5"/>`;
+  m += `<text x="0" y="156" class="mono faint" font-size="10">now playing · 3:12</text>`;
+  return card('vibes', t, {
+    title: 'playvibes',
+    lines: ['Share and discover Spotify playlists.', 'Sign in with Spotify, sync your', 'playlists, like and save others.'],
+    tags: 'Next.js 15 · TypeScript · PostgreSQL',
+    accent: t.ok,
+    css: `.eq{transform-box:fill-box;transform-origin:bottom;animation:eq 1s ease-in-out infinite alternate}@keyframes eq{from{transform:scaleY(.25)}to{transform:scaleY(1)}}`,
+    motif: m,
+  });
 });
 
 // ================= 7. Graphe git =================
@@ -482,8 +432,8 @@ write('graph', (t) => {
   [750, 840].forEach((x) => dot(x, 165, false, t.pink));
   dot(960, 115, true, t.pink); dot(1050, 115); dot(1140, 115, false, t.ok);
   label(60, 143, 'main', 60, 'start', t.blue);
-  label(300, 47, 'evals/v2', 300, 'start', t.violet);
-  label(720, 195, 'fix/empty-answers', 720, 'start', t.pink);
+  label(300, 47, 'feat/pipes', 300, 'start', t.violet);
+  label(720, 195, 'fix/segfault', 720, 'start', t.pink);
   label(1140, 92, 'HEAD', 1140, 'middle', t.ok);
   css += `.head{fill:none;stroke:${t.ok};stroke-width:1.5;transform-box:fill-box;transform-origin:center;opacity:0;animation:head 2s ease-out ${r2((END / 100) * T)}s infinite}@keyframes head{0%{transform:scale(1);opacity:.8}100%{transform:scale(2.6);opacity:0}}`;
   body += `<circle cx="1140" cy="115" r="7" class="head"/>`;

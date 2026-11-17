@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="580" height="210" viewBox="0 0 580 210" xml:space="preserve" role="img" aria-label="minishell: A UNIX shell written in C, inspired by tcsh: pipes, redirections, quotes, aliases and a parser built on an AST.">
+<title>minishell: A UNIX shell written in C, inspired by tcsh: pipes, redirections, quotes, aliases and a parser built on an AST.</title>
+<style>
+.ink{fill:#1f2328}.muted{fill:#59636e}.faint{fill:#8c959f}
+text{white-space:pre}.mono{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace}.sans{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif}.serif{font-family:'Iowan Old Style','Palatino Linotype',Palatino,'Book Antiqua',Georgia,serif}
+
+.box{fill:#f6f8fa;stroke:#d1d9e0}
+.st{stroke:#1f2328;fill:none}
+.cu{animation:cu 1s steps(1) infinite}@keyframes cu{50%{opacity:0}}
+</style>
+
+<rect x="1" y="1" width="578" height="208" rx="14" class="box"/>
+<rect x="28" y="60" width="44" height="3" rx="1.5" fill="#0e8a96"/>
+<text x="28" y="48" class="mono" fill="#0e8a96" font-size="19">minishell</text>
+<text x="28" y="94" class="sans muted" font-size="15">A UNIX shell written in C, inspired</text><text x="28" y="116" class="sans muted" font-size="15">by tcsh: pipes, redirections, quotes,</text><text x="28" y="138" class="sans muted" font-size="15">aliases and a parser built on an AST.</text>
+<text x="28" y="182" class="mono faint" font-size="12">C · POSIX · fork / exec</text>
+<g transform="translate(392,20)"><rect x="0" y="0" width="170" height="150" rx="8" fill="none" stroke="#d1d9e0"/><text x="10" y="24" class="mono" font-size="10.5"><tspan fill="#1a7f37">$</tspan><tspan fill="#1f2328"> ls | grep .c | wc -l</tspan></text><text x="10" y="42" class="mono muted" font-size="10.5">12</text><rect x="8" y="68" width="44" height="24" rx="6" fill="none" stroke="#0e8a96" stroke-width="1.5"/><text x="30" y="84" text-anchor="middle" class="mono ink" font-size="10.5">ls</text><rect x="63" y="68" width="44" height="24" rx="6" fill="none" stroke="#0e8a96" stroke-width="1.5"/><text x="85" y="84" text-anchor="middle" class="mono ink" font-size="10.5">grep</text><rect x="118" y="68" width="44" height="24" rx="6" fill="none" stroke="#0e8a96" stroke-width="1.5"/><text x="140" y="84" text-anchor="middle" class="mono ink" font-size="10.5">wc</text><path d="M53 80H62M108 80H117" stroke="#8c959f" stroke-width="1.5"/><circle r="3.5" fill="#0e8a96"><animateMotion dur="2.4s" repeatCount="indefinite" path="M30 100 H140"/><animate attributeName="opacity" dur="2.4s" repeatCount="indefinite" values="0;1;1;0" keyTimes="0;.1;.9;1"/></circle><text x="10" y="134" class="mono" font-size="10.5" fill="#1a7f37">$</text><rect x="20" y="125" width="6" height="11" fill="#1f2328" class="cu"/></g>
+
+</svg>

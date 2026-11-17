@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="580" height="210" viewBox="0 0 580 210" xml:space="preserve" role="img" aria-label="my-engine: A small 2D game engine for the browser: game loop, scenes, input and canvas drawing. On npm.">
+<title>my-engine: A small 2D game engine for the browser: game loop, scenes, input and canvas drawing. On npm.</title>
+<style>
+.ink{fill:#1f2328}.muted{fill:#59636e}.faint{fill:#8c959f}
+text{white-space:pre}.mono{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace}.sans{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif}.serif{font-family:'Iowan Old Style','Palatino Linotype',Palatino,'Book Antiqua',Georgia,serif}
+
+.box{fill:#f6f8fa;stroke:#d1d9e0}
+.st{stroke:#1f2328;fill:none}
+
+</style>
+
+<rect x="1" y="1" width="578" height="208" rx="14" class="box"/>
+<rect x="28" y="60" width="44" height="3" rx="1.5" fill="#d1388f"/>
+<text x="28" y="48" class="mono" fill="#d1388f" font-size="19">my-engine</text>
+<text x="28" y="94" class="sans muted" font-size="15">A small 2D game engine for the</text><text x="28" y="116" class="sans muted" font-size="15">browser: game loop, scenes, input</text><text x="28" y="138" class="sans muted" font-size="15">and canvas drawing. On npm.</text>
+<text x="28" y="182" class="mono faint" font-size="12">JavaScript · Canvas 2D · npm</text>
+<g transform="translate(392,20)"><rect x="0" y="0" width="170" height="150" rx="8" fill="none" stroke="#d1d9e0"/><line x1="85" y1="8" x2="85" y2="142" stroke="#d1d9e0" stroke-width="2" stroke-dasharray="6 6"/><text x="62" y="26" text-anchor="end" class="mono faint" font-size="14">3</text><text x="108" y="26" class="mono faint" font-size="14">2</text><rect x="8" y="22" width="5" height="36" rx="2" fill="#d1388f"><animate attributeName="y" dur="4s" repeatCount="indefinite" values="22;55;94;55;22"/></rect><rect x="157" y="62" width="5" height="36" rx="2" fill="#8250df"><animate attributeName="y" dur="4s" repeatCount="indefinite" values="62;82;62;42;62"/></rect><circle r="5" fill="#d4a000"><animateMotion dur="4s" repeatCount="indefinite" path="M18 40 L152 100 L18 112 L152 60 Z"/></circle></g>
+
+</svg>
