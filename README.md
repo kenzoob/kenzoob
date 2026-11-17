@@ -1,59 +1,65 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/header-dark.svg">
-  <img alt="Kenzo O'Bryan, dev à Cotonou, Bénin" src="assets/header-light.svg" width="100%">
+  <img alt="Kenzo O'Bryan, developer" src="assets/header-light.svg" width="100%">
 </picture>
 
-Moi c'est Kenzo, développeur à Cotonou. En journée je suis dev fullstack. Le soir, je construis mes propres outils, surtout autour des LLM.
+Hi, I'm Kenzo. I work as a fullstack developer, and in the evenings I build my own tools, mostly around LLMs.
 
-Faire une démo avec un LLM, ça va vite. Ce qui m'intéresse, c'est la suite : l'API qui renvoie une 429 en plein milieu d'une requête, l'agent qui invente une réponse avec assurance, le document qui cache une instruction pour détourner l'IA. C'est là que beaucoup de projets cassent, et c'est là-dessus que je passe mon temps.
+Getting a demo to work is usually the quick part. I spend more time on what happens after, when the API starts returning 429s in the middle of a request, or when the agent gives a confident answer that isn't anywhere in the docs. I like writing the code that handles that, and then checking that it really does.
 
-## resilient-llm en 12 secondes
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/night-dark.svg">
+  <img alt="Line drawing of a desk at night: a laptop scrolling code, a lamp, a mug, and a window on a city at night" src="assets/night-light.svg" width="100%">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/board-dark.svg">
+  <img alt="Split-flap board cycling through 429 TOO MANY REQUESTS, 503 UNAVAILABLE, RETRY IN 500 MS, FALLBACK: OPENAI, 200 OK" src="assets/board-light.svg" width="100%">
+</picture>
+
+## resilient-llm
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/resilience-dark.svg">
-  <img alt="Animation : resilient-llm réessaie après des erreurs d'Anthropic, puis bascule vers OpenAI" src="assets/resilience-light.svg" width="100%">
+  <img alt="Animation: resilient-llm retries after errors from Anthropic, then switches to OpenAI" src="assets/resilience-light.svg" width="100%">
 </picture>
 
-Il se place entre ton code et l'API du modèle. Quand le fournisseur répond mal, il attend, réessaie, compte les échecs, et passe au suivant si ça ne revient pas. Ton app reçoit sa réponse sans avoir à gérer tout ça.
+It sits between your code and the model's API. When a provider fails, it waits, retries, counts the failures, and moves on to the next provider if things don't recover. Your app gets its response and doesn't have to know any of that happened.
 
 ```bash
 npm install @kenzoobryan27/resilient-llm
 ```
 
-## Ce que je construis
+## Projects
 
 <p>
 <a href="https://github.com/kenzoob/Resilient-llm"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-resilient-dark.svg"><img alt="resilient-llm" src="assets/card-resilient-light.svg" width="49%"></picture></a>
 <a href="https://github.com/kenzoob/agent-evals"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-evals-dark.svg"><img alt="agent-evals" src="assets/card-evals-light.svg" width="49%"></picture></a>
 <a href="https://github.com/kenzoob/github-triage-mcp"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-mcp-dark.svg"><img alt="github-triage-mcp" src="assets/card-mcp-light.svg" width="49%"></picture></a>
 <a href="https://github.com/kenzoob/Serp-compare"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-serp-dark.svg"><img alt="serp-compare" src="assets/card-serp-light.svg" width="49%"></picture></a>
-<a href="https://github.com/kenzoob/radartech"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-radar-dark.svg"><img alt="radartech" src="assets/card-radar-light.svg" width="49%"></picture></a>
-<a href="https://github.com/kenzoob/my-engine"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-engine-dark.svg"><img alt="my-engine" src="assets/card-engine-light.svg" width="49%"></picture></a>
 </p>
 
-## Ce que j'ai appris en mesurant mon agent
+## Testing my own agent
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/evals-story-dark.svg">
-  <img alt="Résultats d'agent-evals : v1 contre v2" src="assets/evals-story-light.svg" width="100%">
+  <img alt="agent-evals results, v1 vs v2" src="assets/evals-story-light.svg" width="100%">
 </picture>
 
-J'ai durci le prompt de mon agent RAG pour qu'il arrête d'inventer. Sur ce point, ça a marché : face à une question hors sujet, il dit maintenant « je ne sais pas » à chaque fois. Mais il répond juste beaucoup moins souvent (de 95 % à 60 %), et la moitié de ses échecs sont des réponses vides. Je cherche encore pourquoi.
+I made my RAG agent's prompt stricter so it would stop making things up. That part worked: on off-topic questions it now says "I don't know" every time. But it also got much worse at normal questions, going from 95% correct to 60%, and half of those failures are empty answers. I haven't found out why yet.
 
-Sans les évals, je n'aurais vu que la bonne nouvelle. C'est pour ça que je ne fais plus confiance à un agent tant que je ne l'ai pas mesuré.
-
-<details>
-<summary><b>In English</b></summary>
-<br>
-
-I'm a developer based in Cotonou, Benin. I build reliability tooling for LLM apps: retries, circuit breakers and provider fallback in <a href="https://github.com/kenzoob/Resilient-llm">resilient-llm</a>, and an eval suite that checks whether a RAG agent can be trusted in <a href="https://github.com/kenzoob/agent-evals">agent-evals</a>. All my repos are documented in English.
-</details>
+If I had only looked at the hallucination numbers, I would have shipped v2 thinking it was an improvement.
 
 <br>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/graph-dark.svg">
+  <img alt="Animated git graph: main, an evals/v2 branch and a fix/empty-answers branch merging back in" src="assets/graph-light.svg" width="100%">
+</picture>
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/footer-dark.svg">
   <img alt="" src="assets/footer-light.svg" width="100%">
 </picture>
 
-<sub>Les animations de cette page sont des SVG générés par <a href="scripts/build.mjs">scripts/build.mjs</a>, sans service externe.</sub>
+<sub>Every animation on this page is a plain SVG generated by <a href="scripts/build.mjs">scripts/build.mjs</a>.</sub>

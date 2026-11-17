@@ -20,6 +20,12 @@ const SERIF = `'Iowan Old Style','Palatino Linotype',Palatino,'Book Antiqua',Geo
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const r2 = (n) => Math.round(n * 100) / 100;
 
+// Petit générateur pseudo-aléatoire déterministe : le build donne toujours le même dessin.
+function rng(seed) {
+  let s = seed >>> 0;
+  return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 2 ** 32);
+}
+
 function svg(w, h, t, css, body, title) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xml:space="preserve" role="img" aria-label="${esc(title)}">
 <title>${esc(title)}</title>
@@ -40,7 +46,6 @@ function write(name, build) {
 }
 
 // ---------- Effet machine à écrire (SMIL, sans JS) ----------
-// lines : textes ; total : durée du cycle ; renvoie les éléments à poser à (x, y).
 function typer(id, lines, { x, y, cw, size, cls, slot = 5, type = 2, hold = 2.3, erase = 0.5, t }) {
   const total = slot * lines.length;
   let out = '';
@@ -53,7 +58,6 @@ function typer(id, lines, { x, y, cw, size, cls, slot = 5, type = 2, hold = 2.3,
     const kt = pts.map((p) => r2(p[0] / total).toFixed(4));
     if (kt[0] !== '0.0000') kt.unshift('0');
     const vals = pts.map((p) => r2(p[1]));
-    // keyTimes doit finir à 1 en mode discret
     kt.push('1'); vals.push(0);
     const cur = pts.map((p) => r2(Math.min(p[1], n * cw)));
     cur.push(0);
@@ -64,48 +68,40 @@ function typer(id, lines, { x, y, cw, size, cls, slot = 5, type = 2, hold = 2.3,
   return out;
 }
 
-// ---------- Carte du Bénin en points ----------
-// Contour simplifié (longitude, latitude). Assez juste pour la silhouette, pas pour un cadastre.
-const BENIN = [
-  [1.62, 6.22], [2.72, 6.36], [2.74, 7.0], [2.72, 7.9], [2.76, 8.6], [2.74, 9.05], [3.1, 9.1], [3.15, 9.6],
-  [3.36, 9.85], [3.6, 10.3], [3.85, 10.45], [3.73, 10.85], [3.6, 11.1], [3.65, 11.5], [3.58, 11.7],
-  [3.4, 11.88], [3.1, 12.1], [2.85, 12.38], [2.4, 11.95], [1.95, 11.5], [1.45, 11.42],
-  [1.1, 11.2], [0.92, 11.0], [0.78, 10.6], [0.9, 10.35], [1.35, 10.0], [1.36, 9.5], [1.6, 9.05],
-  [1.62, 8.5], [1.63, 7.6], [1.64, 6.9], [1.62, 6.22],
+// ---------- Matrice de points « { ▮ } » pour l'en-tête ----------
+const BRACE = [
+  '....XXX', '...XXXX',
+  ...Array(7).fill('...XX..'),
+  '..XXX..', '.XXX...', 'XXX....', 'XX.....', 'XXX....', '.XXX...', '..XXX..',
+  ...Array(7).fill('...XX..'),
+  '...XXXX', '....XXX',
 ];
-function inside([px, py], poly) {
-  let c = false;
-  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-    const [xi, yi] = poly[i]; const [xj, yj] = poly[j];
-    if ((yi > py) !== (yj > py) && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi) c = !c;
-  }
-  return c;
-}
+const GLYPH = BRACE.map((row, y) => {
+  const right = [...row].reverse().join('');
+  const cursor = y >= 9 && y <= 15 ? 'CCC' : '...';
+  return row + '.....' + cursor + '.....' + right;
+});
 
 // ================= 1. En-tête =================
 write('header', (t) => {
   const W = 1200, H = 470;
-  // carte
-  const mx = 905, my = 40, mh = 390; // zone de la carte
-  const sc = mh / (12.45 - 6.15);
-  const P = (lon, lat) => [mx + (lon - 0.75) * sc, my + (12.45 - lat) * sc];
-  const step = 9.5;
-  const coto = P(2.42, 6.37);
-  let dots = '';
-  for (let lat = 12.45; lat > 6.15; lat -= step / sc) {
-    for (let lon = 0.75; lon < 3.9; lon += step / sc) {
-      if (!inside([lon, lat], BENIN)) continue;
-      const [x, y] = P(lon, lat);
-      const d = Math.hypot(x - coto[0], y - coto[1]);
-      dots += `<circle cx="${r2(x)}" cy="${r2(y)}" r="2.4" style="animation-delay:${r2(0.6 + d / 260)}s,${r2(d / 180)}s"/>`;
-    }
-  }
+  const gx = 838, gy = 82, sp = 12.4;
+  const cx = gx + 13 * sp, cy = gy + 12 * sp; // centre du curseur, d'où part l'onde
+  let grid = '', dots = '', cur = '';
+  GLYPH.forEach((row, y) => [...row].forEach((ch, x) => {
+    const px = r2(gx + x * sp), py = r2(gy + y * sp);
+    if (ch === '.') { grid += `<circle cx="${px}" cy="${py}" r="1.5"/>`; return; }
+    const d = Math.hypot(px - cx, py - cy);
+    if (ch === 'C') cur += `<circle cx="${px}" cy="${py}" r="3.4"/>`;
+    else dots += `<circle cx="${px}" cy="${py}" r="3.2" style="animation-delay:${r2(0.5 + d / 300)}s,${r2(d / 160)}s"/>`;
+  }));
   const css = `
-.dots circle{fill:${t.ink};opacity:0;animation:pop .5s ease-out both,wave 7s ease-in-out infinite}
-@keyframes pop{from{opacity:0}to{opacity:.22}}
-@keyframes wave{0%,100%{opacity:.22}8%{opacity:.85}22%{opacity:.22}}
-.ring{fill:none;stroke:${t.ink};stroke-width:1.5;transform-origin:${r2(coto[0])}px ${r2(coto[1])}px;animation:ring 2.8s ease-out infinite}
-@keyframes ring{0%{transform:scale(.3);opacity:.9}100%{transform:scale(3.2);opacity:0}}
+.grid circle{fill:${t.ink};opacity:.09}
+.dots circle{fill:${t.ink};opacity:0;animation:pop .5s ease-out both,wave 6s ease-in-out infinite}
+@keyframes pop{from{opacity:0}to{opacity:.55}}
+@keyframes wave{0%,100%{opacity:.55}8%{opacity:1}24%{opacity:.55}}
+.cur circle{fill:${t.ink};animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
 .up{opacity:0;animation:up .9s cubic-bezier(.2,.7,.2,1) both}
 @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 .rule{stroke:${t.line};stroke-width:1;stroke-dasharray:720;stroke-dashoffset:720;animation:draw 1.4s .2s ease-out forwards}
@@ -113,31 +109,140 @@ write('header', (t) => {
 .box{fill:${t.card};stroke:${t.line}}
 `;
   const body = `
-<text x="60" y="72" class="mono muted up" font-size="14" style="animation-delay:.1s">kenzoob  /  Cotonou, Bénin</text>
+<text x="60" y="72" class="mono muted up" font-size="14" style="animation-delay:.1s">@kenzoob</text>
 <text x="54" y="168" class="serif ink up" font-size="82" style="animation-delay:.25s">Kenzo O'Bryan</text>
 <line x1="60" y1="196" x2="780" y2="196" class="rule"/>
-<text x="60" y="236" class="sans muted up" font-size="20" style="animation-delay:.6s">Je suis dev à Cotonou. Je construis des outils autour des LLM,</text>
-<text x="60" y="264" class="sans muted up" font-size="20" style="animation-delay:.7s">et surtout je vérifie qu'ils tiennent quand quelque chose casse.</text>
+<text x="60" y="236" class="sans muted up" font-size="20" style="animation-delay:.6s">Fullstack developer. In the evenings I build tools for LLM apps,</text>
+<text x="60" y="264" class="sans muted up" font-size="20" style="animation-delay:.7s">mostly the code that runs when the model or the API fails.</text>
 <g class="up" style="animation-delay:.9s">
 <rect x="60" y="298" width="720" height="56" rx="10" class="box"/>
-<text x="80" y="332" class="mono faint" font-size="15">en ce moment ›</text>
+<text x="80" y="332" class="mono faint" font-size="15">working on ›</text>
 </g>
 ${typer('ty', [
-    'un circuit breaker pour les appels LLM',
-    'des évals pour voir quand un agent RAG invente',
-    'un serveur MCP qui ne fait rien sans permission',
-  ], { x: 212, y: 332, cw: 9.05, size: 15, cls: 'mono ink" font-size="15', t })}
+    'a circuit breaker for LLM API calls',
+    'evals that catch my RAG agent making things up',
+    'an MCP server for GitHub issues, read-only by default',
+  ], { x: 196, y: 332, cw: 9.05, size: 15, cls: 'mono ink" font-size="15', t })}
 <text x="60" y="412" class="mono faint up" font-size="13" style="animation-delay:1.1s">TypeScript  ·  Node.js  ·  Python  ·  Flutter  ·  C  ·  FastAPI  ·  React  ·  Docker</text>
+<g class="grid">${grid}</g>
 <g class="dots">${dots}</g>
-<circle cx="${r2(coto[0])}" cy="${r2(coto[1])}" r="6" class="ring"/>
-<circle cx="${r2(coto[0])}" cy="${r2(coto[1])}" r="3.6" fill="${t.ink}"/>
-<text x="${r2(coto[0] + 14)}" y="${r2(coto[1] + 5)}" class="mono ink" font-size="13">Cotonou</text>
-<text x="${r2(coto[0] + 14)}" y="${r2(coto[1] + 22)}" class="mono faint" font-size="11">6.37°N  2.43°E</text>
+<g class="cur">${cur}</g>
 `;
-  return svg(W, H, t, css, body, "Kenzo O'Bryan, dev à Cotonou, Bénin");
+  return svg(W, H, t, css, body, "Kenzo O'Bryan, fullstack developer");
 });
 
-// ================= 2. resilient-llm en action =================
+// ================= 2. Bureau, la nuit =================
+write('night', (t) => {
+  const W = 1200, H = 330;
+  const R = rng(7);
+  // ciel et ville dans la fenêtre
+  let stars = '';
+  for (let i = 0; i < 18; i++) {
+    const x = r2(85 + R() * 400), y = r2(36 + R() * 90);
+    if (x > 392 && x < 448 && y < 104) continue; // pas d'étoile sur la lune
+    stars += `<circle cx="${x}" cy="${y}" r="${r2(0.8 + R() * 1.1)}" class="st" style="animation-delay:${r2(R() * 4)}s"/>`;
+  }
+  const blds = [[72, 40, 70], [116, 30, 105], [150, 55, 60], [210, 26, 132], [240, 44, 86], [288, 60, 55], [352, 34, 116], [390, 50, 76], [444, 24, 96], [472, 26, 62]];
+  let city = '', lit = '';
+  for (const [x, w, h] of blds) {
+    city += `<rect x="${x}" y="${264 - h}" width="${w}" height="${h}"/>`;
+    for (let wy = 264 - h + 10; wy < 256; wy += 14) {
+      for (let wx = x + 6; wx < x + w - 6; wx += 10) {
+        if (R() < 0.7) continue;
+        lit += `<rect x="${wx}" y="${wy}" width="4" height="6" class="lw" style="animation-delay:${r2(R() * 9)}s"/>`;
+      }
+    }
+  }
+  // code qui défile sur l'écran
+  let code = '';
+  const lines = [];
+  let ind = 0;
+  for (let i = 0; i < 26; i++) {
+    const segs = [];
+    let x = ind * 16;
+    const n = 1 + Math.floor(R() * 3);
+    for (let k = 0; k < n; k++) { const w = 14 + Math.floor(R() * 70); segs.push([x, w, R() < 0.35 ? 'ink' : 'faint']); x += w + 7; }
+    lines.push(segs);
+    ind = Math.max(0, Math.min(3, ind + (R() < 0.3 ? 1 : R() < 0.5 ? -1 : 0)));
+  }
+  for (let rep = 0; rep < 2; rep++) lines.forEach((segs, i) => {
+    const y = 122 + (rep * 26 + i) * 12;
+    for (const [x, w, c] of segs) code += `<rect x="${756 + x}" y="${y}" width="${Math.min(w, 262 - x)}" height="5" rx="2" class="${c}" opacity="${c === 'ink' ? 0.8 : 0.6}"/>`;
+  });
+  const css = `
+.fr{fill:none;stroke:${t.ink};stroke-width:1.5}
+.st{fill:${t.ink};animation:tw 4s ease-in-out infinite}@keyframes tw{0%,100%{opacity:.25}50%{opacity:1}}
+.city rect{fill:${t.faint};opacity:.3}
+.lw{fill:${t.ink};opacity:0;animation:lw 9s steps(1) infinite}@keyframes lw{0%{opacity:.7}40%{opacity:0}70%{opacity:.7}}
+.scroll{animation:sc 22s linear infinite}@keyframes sc{to{transform:translateY(-312px)}}
+.cone{fill:${t.ink};animation:fl 5s ease-in-out infinite}@keyframes fl{0%,100%{opacity:.05}50%{opacity:.08}}
+.sm{fill:none;stroke:${t.faint};stroke-width:1.6;stroke-linecap:round;animation:sm 3s ease-in-out infinite}
+@keyframes sm{0%{opacity:0;transform:translateY(4px)}30%{opacity:.9}100%{opacity:0;transform:translateY(-12px)}}
+.bk{animation:blink 1s steps(1) infinite}@keyframes blink{50%{fill-opacity:0}}
+`;
+  const body = `
+<clipPath id="win"><rect x="71" y="25" width="428" height="238"/></clipPath>
+<g clip-path="url(#win)">
+${stars}
+<circle cx="420" cy="78" r="22" fill="${t.ink}" opacity=".85"/><circle cx="431" cy="71" r="20" fill="${t.bg}"/>
+<g class="city">${city}</g>
+<line x1="223" y1="132" x2="223" y2="110" stroke="${t.faint}" stroke-width="1.5"/><circle cx="223" cy="108" r="2" fill="${t.ink}" class="st"/>
+${lit}
+</g>
+<rect x="70" y="24" width="430" height="240" rx="6" class="fr"/>
+<line x1="285" y1="24" x2="285" y2="264" stroke="${t.line}" stroke-width="1.5"/>
+<line x1="70" y1="144" x2="500" y2="144" stroke="${t.line}" stroke-width="1.5"/>
+<line x1="40" y1="292" x2="1160" y2="292" stroke="${t.ink}" stroke-width="1.5"/>
+<polygon points="566,170 620,160 760,292 560,292" class="cone"/>
+<ellipse cx="610" cy="289" rx="26" ry="4" fill="${t.ink}"/>
+<polyline points="610,287 642,202 598,152" fill="none" stroke="${t.ink}" stroke-width="3" stroke-linejoin="round"/>
+<path d="M574 142 L608 128 L624 160 L562 172 Z" fill="${t.ink}"/>
+<rect x="740" y="104" width="300" height="180" rx="8" fill="${t.card}" class="fr"/>
+<clipPath id="scr"><rect x="752" y="116" width="276" height="156" rx="3"/></clipPath>
+<g clip-path="url(#scr)"><g class="scroll">${code}</g></g>
+<path d="M712 284 H1068 L1058 292 H722 Z" fill="${t.ink}"/>
+<rect x="1092" y="254" width="34" height="38" rx="4" class="fr"/>
+<path d="M1126 262 q14 0 14 12 q0 12 -14 12" class="fr"/>
+${[1100, 1109, 1118].map((x, i) => `<path d="M${x} 246 q-5 -7 0 -14 q5 -7 0 -14" class="sm" style="animation-delay:${i * 0.9}s"/>`).join('')}
+<text x="70" y="320" class="mono faint" font-size="13">23<tspan class="bk">:</tspan>14</text>
+`;
+  return svg(W, H, t, css, body, 'A desk at night: laptop scrolling code, lamp, mug, city through the window');
+});
+
+// ================= 3. Tableau à volets =================
+write('board', (t) => {
+  const N = 22, CW = 46, CH = 66, G = 5, D = 2.4;
+  const msgs = ['429 TOO MANY REQUESTS', '503 UNAVAILABLE', 'RETRY IN 500 MS', 'FALLBACK: OPENAI', '200 OK'];
+  const T = D * msgs.length;
+  const W = 1200, H = 116, y0 = 24;
+  const x0 = (W - (N * CW + (N - 1) * G)) / 2;
+  const pad = (s) => { const l = Math.floor((N - s.length) / 2); return (' '.repeat(l) + s).padEnd(N); };
+  const rows = msgs.map(pad);
+  let cells = '';
+  for (let c = 0; c < N; c++) {
+    const x = r2(x0 + c * (CW + G));
+    const off = 0.05 + c * 0.035;
+    cells += `<rect x="${x}" y="${y0}" width="${CW}" height="${CH}" rx="5" class="cell"/>`;
+    rows.forEach((row, m) => {
+      const ch = row[c];
+      if (ch === ' ') return;
+      const a = (m * D + off) / T, b = ((m + 1) * D + off) / T;
+      const last = m === rows.length - 1;
+      const kt = last ? `0;${(off / T).toFixed(4)};${a.toFixed(4)};1` : `0;${a.toFixed(4)};${b.toFixed(4)};1`;
+      const vals = last ? '1;0;1;1' : '0;1;0;0';
+      const col = m === rows.length - 1 ? t.ok : m < 2 ? t.ko : t.ink;
+      cells += `<text x="${r2(x + CW / 2)}" y="${y0 + 46}" text-anchor="middle" class="mono" font-size="34" font-weight="700" fill="${col}" opacity="${last ? 1 : 0}"><animate attributeName="opacity" dur="${T}s" repeatCount="indefinite" calcMode="discrete" keyTimes="${kt}" values="${vals}"/>${esc(ch)}</text>`;
+    });
+    cells += `<line x1="${x}" y1="${y0 + CH / 2}" x2="${r2(x + CW)}" y2="${y0 + CH / 2}" stroke="${t.bg}" stroke-width="2"/>`;
+    cells += `<rect x="${x}" y="${y0}" width="${CW}" height="${CH / 2}" rx="5" class="fl" style="animation-delay:${r2(off)}s"/>`;
+  }
+  const css = `.cell{fill:${t.card};stroke:${t.line}}
+.fl{fill:${t.line};opacity:0;transform-box:fill-box;transform-origin:bottom;animation:fl ${D}s linear infinite}
+@keyframes fl{0%{opacity:1;transform:scaleY(1)}7%{opacity:1;transform:scaleY(0)}7.1%,100%{opacity:0;transform:scaleY(0)}}`;
+  return svg(W, H, t, css, cells, 'Split-flap board: 429 TOO MANY REQUESTS, 503 UNAVAILABLE, RETRY IN 500 MS, FALLBACK: OPENAI, 200 OK');
+});
+
+// ================= 4. resilient-llm en action =================
 write('resilience', (t) => {
   const W = 1200, H = 420, T = 12;
   const pkt = (id, x1, y1, x2, y2, a, b) => {
@@ -157,7 +262,6 @@ write('resilience', (t) => {
 .wire{stroke:${t.line};stroke-width:1.5;fill:none}
 .wire.d{stroke-dasharray:5 5;animation:flow 1s linear infinite}
 @keyframes flow{to{stroke-dashoffset:-10}}
-.ko{fill:${t.ko}}.ok{fill:${t.ok}}
 ${ps.map((p) => p.css).join('\n')}
 ${win('b1', 15, 24)}${win('b2', 33, 41)}${win('b3', 50, 57)}${win('b4', 64, 96)}
 ${win('l1', 16, 96)}${win('l2', 34, 96)}${win('l3', 51, 96)}${win('l4', 65, 96)}
@@ -167,27 +271,27 @@ ${win('done', 80, 96)}
 `;
   const badge = (cls, x, y, txt, color) => `<g class="${cls}"><rect x="${x}" y="${y - 15}" width="52" height="22" rx="11" fill="none" stroke="${color}"/><text x="${x + 26}" y="${y + 1}" text-anchor="middle" class="mono" font-size="13" fill="${color}">${txt}</text></g>`;
   const logs = [
-    ['→ anthropic', '429', 'essai 1', 'on attend ≈ 500 ms, puis on réessaie', t.ko],
-    ['→ anthropic', '503', 'essai 2', 'on attend ≈ 1 s', t.ko],
-    ['→ anthropic', '503', 'essai 3', 'plus d’essai : on passe au fournisseur suivant', t.ko],
-    ['→ openai', '200', 'ok', 'la réponse revient à l’app, sans que l’app ait rien vu', t.ok],
+    ['→ anthropic', '429', 'try 1', 'wait ~500 ms, then retry', t.ko],
+    ['→ anthropic', '503', 'try 2', 'wait ~1 s, then retry', t.ko],
+    ['→ anthropic', '503', 'try 3', 'out of retries, move to the next provider', t.ko],
+    ['→ openai', '200', 'ok', 'response goes back to the app', t.ok],
   ];
   const body = `
-<text x="60" y="44" class="mono faint" font-size="13">resilient-llm  ·  exemple avec retries: 2, failureThreshold: 5</text>
-<text x="60" y="74" class="sans ink" font-size="21">Ce qui se passe quand Anthropic répond mal à ton appel</text>
+<text x="60" y="44" class="mono faint" font-size="13">resilient-llm  ·  example with retries: 2, failureThreshold: 5</text>
+<text x="60" y="74" class="sans ink" font-size="21">Anthropic keeps failing, your request still gets an answer</text>
 <path d="M${A[0]} ${A[1]}H${R1[0]}" class="wire"/>
 <path d="M${R2[0]} ${R2[1]}L${AN[0]} ${AN[1]}" class="wire"/>
 <path d="M${R2[0]} ${R2[1]}L${OA[0]} ${OA[1]}" class="wire d"/>
 <rect x="60" y="150" width="190" height="50" rx="10" class="box"/>
-<text x="155" y="181" text-anchor="middle" class="mono ink" font-size="15">ton app</text>
-<text x="155" y="226" text-anchor="middle" class="mono done" font-size="13" fill="${t.ok}">✓ réponse reçue</text>
+<text x="155" y="181" text-anchor="middle" class="mono ink" font-size="15">your app</text>
+<text x="155" y="226" text-anchor="middle" class="mono done" font-size="13" fill="${t.ok}">✓ got a response</text>
 <rect x="440" y="140" width="270" height="70" rx="12" class="box"/>
 <text x="575" y="170" text-anchor="middle" class="mono ink" font-size="16">resilient-llm</text>
 <g class="mono faint" font-size="12" text-anchor="middle">
-<text x="575" y="193" class="f0">échecs : 0/5   circuit fermé</text>
-<text x="575" y="193" class="f1">échecs : 1/5   circuit fermé</text>
-<text x="575" y="193" class="f2">échecs : 2/5   circuit fermé</text>
-<text x="575" y="193" class="f3">échecs : 3/5   on bascule</text>
+<text x="575" y="193" class="f0">failures 0/5   circuit closed</text>
+<text x="575" y="193" class="f1">failures 1/5   circuit closed</text>
+<text x="575" y="193" class="f2">failures 2/5   circuit closed</text>
+<text x="575" y="193" class="f3">failures 3/5   falling back</text>
 </g>
 <g class="dim"><rect x="920" y="85" width="220" height="50" rx="10" class="box"/>
 <text x="942" y="115" class="mono ink" font-size="15">Anthropic</text></g>
@@ -197,12 +301,12 @@ ${badge('b1', 1076, 115, '429', t.ko)}${badge('b2', 1076, 115, '503', t.ko)}${ba
 ${badge('b4', 1076, 245, '200', t.ok)}
 ${ps.map((p) => p.el).join('')}
 <line x1="60" y1="290" x2="1140" y2="290" stroke="${t.line}"/>
-${logs.map(([to, code, n, msg, col], i) => `<text y="${322 + i * 24}" class="mono l${i + 1}" font-size="13"><tspan x="60" class="muted">${esc(to)}</tspan><tspan x="200" fill="${col}">${code}</tspan><tspan x="250" class="faint">${n}</tspan><tspan x="340" class="ink">${esc(msg)}</tspan></text>`).join('\n')}
+${logs.map(([to, code, n, msg, col], i) => `<text y="${322 + i * 24}" class="mono l${i + 1}" font-size="13"><tspan x="60" class="muted">${esc(to)}</tspan><tspan x="200" fill="${col}">${code}</tspan><tspan x="250" class="faint">${n}</tspan><tspan x="330" class="ink">${esc(msg)}</tspan></text>`).join('\n')}
 `;
-  return svg(W, H, t, css, body, 'Animation : resilient-llm réessaie, puis bascule vers un autre fournisseur');
+  return svg(W, H, t, css, body, 'Animation: resilient-llm retries, then falls back to another provider');
 });
 
-// ================= 3. Cartes de projets =================
+// ================= 5. Cartes de projets =================
 function card(name, t, { title, lines, tags, motif, css = '' }) {
   const W = 580, H = 210;
   const base = `
@@ -214,58 +318,76 @@ ${css}`;
 <text x="28" y="48" class="mono ink" font-size="19">${esc(title)}</text>
 ${lines.map((l, i) => `<text x="28" y="${84 + i * 22}" class="sans muted" font-size="15">${esc(l)}</text>`).join('')}
 <text x="28" y="182" class="mono faint" font-size="12">${esc(tags)}</text>
-<g transform="translate(400,24)">${motif}</g>
+<g transform="translate(392,20)">${motif}</g>
 `;
-  return svg(W, H, t, base, body, `${title} : ${lines.join(' ')}`);
+  return svg(W, H, t, base, body, `${title}: ${lines.join(' ')}`);
 }
 
+// resilient-llm : la requête bute sur une erreur, le disjoncteur s'ouvre, elle passe par l'autre voie.
 write('card-resilient', (t) => card('resilient', t, {
   title: 'resilient-llm',
-  lines: ['Des appels LLM qui ne lâchent pas', 'en prod : retries, circuit breaker,', 'fournisseur de secours, streaming.'],
-  tags: 'TypeScript · npm · zéro dépendance · 70 tests',
-  css: `@keyframes m1{0%{transform:translate(0,0);opacity:0}5%{opacity:1}35%{transform:translate(70px,0)}45%{transform:translate(70px,0)}65%{transform:translate(70px,60px)}95%{transform:translate(150px,60px);opacity:1}100%{transform:translate(150px,60px);opacity:0}}
-.m1{animation:m1 3.2s ease-in-out infinite}
-@keyframes x1{0%,30%{opacity:.2}36%,48%{opacity:1}60%,100%{opacity:.2}}.x1{animation:x1 3.2s linear infinite}`,
-  motif: `<line x1="0" y1="50" x2="160" y2="50" stroke="${t.line}" stroke-dasharray="4 4"/><line x1="0" y1="110" x2="160" y2="110" stroke="${t.line}" stroke-dasharray="4 4"/>
-<g class="x1" stroke="${t.ko}" stroke-width="2.5"><line x1="84" y1="40" x2="100" y2="60"/><line x1="100" y1="40" x2="84" y2="60"/></g>
-<circle cx="6" cy="50" r="6" fill="${t.ink}" class="m1"/>
-<text x="0" y="30" class="mono faint" font-size="11">anthropic</text><text x="0" y="135" class="mono faint" font-size="11">openai</text>`,
+  lines: ['Keeps LLM calls working when a', 'provider fails: retries, a circuit', 'breaker, fallback and streaming.'],
+  tags: 'TypeScript · npm · no dependencies · 70 tests',
+  css: `@keyframes m1{0%{transform:translate(0,0);opacity:0}5%{opacity:1}30%{transform:translate(64px,0)}44%{transform:translate(64px,0)}62%{transform:translate(64px,84px)}88%{transform:translate(150px,84px);opacity:1}94%,100%{transform:translate(150px,84px);opacity:0}}
+.m1{animation:m1 3.6s ease-in-out infinite}
+@keyframes x1{0%,28%{opacity:0}32%,90%{opacity:1}100%{opacity:0}}.x1{animation:x1 3.6s linear infinite}
+@keyframes sw{0%,40%{transform:rotate(0)}48%,92%{transform:rotate(-38deg)}100%{transform:rotate(0)}}.sw{transform-box:view-box;transform-origin:36px 152px;animation:sw 3.6s ease-in-out infinite}
+@keyframes ok{0%,84%{opacity:0}88%,96%{opacity:1}100%{opacity:0}}.okm{animation:ok 3.6s linear infinite}
+@keyframes lane{0%,40%{opacity:1}48%,92%{opacity:.3}100%{opacity:1}}.lane{animation:lane 3.6s linear infinite}`,
+  motif: `<text x="0" y="22" class="mono faint" font-size="11">anthropic</text>
+<line x1="0" y1="40" x2="170" y2="40" stroke="${t.line}" stroke-width="2" class="lane"/>
+<text x="0" y="106" class="mono faint" font-size="11">openai</text>
+<line x1="0" y1="124" x2="170" y2="124" stroke="${t.line}" stroke-width="2"/>
+<path d="M70 40 V124" stroke="${t.line}" stroke-dasharray="3 4"/>
+<g class="x1" stroke="${t.ko}" stroke-width="2.5" stroke-linecap="round"><line x1="80" y1="30" x2="96" y2="50"/><line x1="96" y1="30" x2="80" y2="50"/></g>
+<circle cx="6" cy="40" r="6.5" fill="${t.ink}" class="m1"/>
+<text x="160" y="116" class="mono okm" font-size="14" fill="${t.ok}">✓</text>
+<circle cx="36" cy="152" r="3" fill="${t.ink}"/><circle cx="76" cy="152" r="3" fill="${t.ink}"/>
+<line x1="36" y1="152" x2="76" y2="152" stroke="${t.ink}" stroke-width="2.5" stroke-linecap="round" class="sw"/>
+<text x="90" y="156" class="mono faint" font-size="11">breaker</text>`,
 }));
 
+// agent-evals : 30 cas de test qui passent un à un (motif illustratif, pas les vrais résultats).
 write('card-evals', (t) => {
-  const data = [['corr.', 95, 60], ['cit.', 55, 60], ['abst.', 0, 100], ['inj.', 0, 0]];
-  let m = '', css = '';
-  data.forEach(([lab, a, b], i) => {
-    const x = i * 42;
-    const ha = Math.max(2, a * 1.1), hb = Math.max(2, b * 1.1);
-    m += `<rect x="${x}" y="${120 - ha}" width="14" height="${ha}" fill="${t.faint}" class="g" style="animation-delay:${i * 0.15}s"/>
-<rect x="${x + 16}" y="${120 - hb}" width="14" height="${hb}" fill="${t.ink}" class="g" style="animation-delay:${i * 0.15 + 0.1}s"/>
-<text x="${x + 15}" y="138" text-anchor="middle" class="mono faint" font-size="10">${lab}</text>`;
-  });
-  m += `<text x="0" y="158" class="mono faint" font-size="10">▪ v1   </text><text x="48" y="158" class="mono ink" font-size="10">▪ v2</text>`;
-  css = `.g{transform-box:fill-box;transform-origin:bottom;animation:g 4s cubic-bezier(.2,.7,.2,1) infinite}@keyframes g{0%{transform:scaleY(0)}25%,85%{transform:scaleY(1)}100%{transform:scaleY(0)}}`;
+  const fails = new Set([4, 9, 13, 17, 22, 27]);
+  let m = '';
+  for (let i = 0; i < 30; i++) {
+    const x = (i % 6) * 27, y = Math.floor(i / 6) * 27;
+    const d = r2(i * 0.11);
+    m += `<rect x="${x}" y="${y}" width="21" height="21" rx="4" fill="none" stroke="${t.line}"/>`;
+    if (fails.has(i)) m += `<g class="c" style="animation-delay:${d}s" stroke="${t.ko}" stroke-width="2" stroke-linecap="round"><line x1="${x + 6}" y1="${y + 6}" x2="${x + 15}" y2="${y + 15}"/><line x1="${x + 15}" y1="${y + 6}" x2="${x + 6}" y2="${y + 15}"/></g>`;
+    else m += `<rect x="${x + 4}" y="${y + 4}" width="13" height="13" rx="2" fill="${t.ink}" class="c" style="animation-delay:${d}s"/>`;
+  }
+  m += `<text x="0" y="158" class="mono faint" font-size="11">30 test cases, run in CI</text>`;
   return card('evals', t, {
     title: 'agent-evals',
-    lines: ['Un agent RAG sur la doc Node.js,', 'et 30 cas de test pour savoir', 'si on peut le croire.'],
-    tags: 'TypeScript · LLM-as-judge · injections · CI',
-    css, motif: m,
+    lines: ['A RAG agent over the Node.js docs,', 'with 30 test cases to check whether', 'its answers can be trusted.'],
+    tags: 'TypeScript · LLM-as-judge · prompt injection · CI',
+    css: `.c{opacity:0;animation:c 6s ease-out infinite}@keyframes c{0%{opacity:0}4%,80%{opacity:1}90%,100%{opacity:0}}`,
+    motif: m,
   });
 });
 
+// github-triage-mcp : une requête normale traverse les 4 couches, une requête piégée est arrêtée.
 write('card-mcp', (t) => {
-  const labels = ['lecture seule', 'allowlist', 'validation', 'contenu marqué'];
   let m = '';
-  labels.forEach((l, i) => {
-    const p = i * 14;
-    m += `<rect x="${p}" y="${p}" width="${160 - 2 * p}" height="${160 - 2 * p}" rx="${12 - i * 2}" class="st ly" style="animation-delay:${i * 0.45}s"/>`;
-  });
-  m += `<circle cx="80" cy="80" r="7" fill="${t.ink}" class="core"/>`;
+  for (let i = 0; i < 4; i++) {
+    const p = i * 15;
+    m += `<rect x="${10 + p}" y="${p}" width="${150 - 2 * p}" height="${150 - 2 * p}" rx="${12 - i * 2}" class="st ly" style="animation-delay:${r2(0.25 + i * 0.22)}s"/>`;
+  }
+  m += `<circle cx="85" cy="75" r="9" fill="none" stroke="${t.ink}" stroke-width="2" class="core"/>`;
+  m += `<circle cx="85" cy="-14" r="5" fill="${t.ink}" class="good"/>`;
+  m += `<circle cx="85" cy="168" r="5" fill="${t.ko}" class="bad"/>`;
+  m += `<rect x="40" y="146" width="90" height="8" rx="4" fill="${t.ko}" class="hit"/>`;
   return card('mcp', t, {
     title: 'github-triage-mcp',
-    lines: ['Un serveur MCP pour trier les issues', 'GitHub sans donner les clés du dépôt', 'à l’IA. Quatre couches de sécurité.'],
-    tags: 'MCP · TypeScript · lecture seule par défaut',
-    css: `.ly{stroke-width:1.5;opacity:.18;animation:ly 4s ease-in-out infinite}@keyframes ly{0%,100%{opacity:.18}12%,60%{opacity:1}}
-.core{transform-origin:480px 104px;animation:core 4s ease-in-out infinite}@keyframes core{0%,40%{opacity:.4}55%,80%{opacity:1}100%{opacity:.4}}`,
+    lines: ['An MCP server that triages GitHub', 'issues without handing the AI the', 'keys to the repo. Four safety layers.'],
+    tags: 'MCP · TypeScript · read-only by default',
+    css: `.ly{stroke-width:1.5;opacity:.2;animation:ly 5s ease-in-out infinite}@keyframes ly{0%,4%{opacity:.2}8%,14%{opacity:1}22%,100%{opacity:.2}}
+.good{animation:good 5s ease-in-out infinite}@keyframes good{0%{transform:translateY(0);opacity:0}4%{opacity:1}30%{transform:translateY(89px);opacity:1}40%,100%{transform:translateY(89px);opacity:0}}
+.core{transform-box:fill-box;transform-origin:center;animation:core 5s ease-out infinite}@keyframes core{0%,28%{transform:scale(1);opacity:.4}34%{transform:scale(1.6);opacity:1}46%,100%{transform:scale(1);opacity:.4}}
+.bad{animation:bad 5s ease-in infinite}@keyframes bad{0%,52%{transform:translateY(0);opacity:0}56%{opacity:1}66%{transform:translateY(-12px);opacity:1}78%,100%{transform:translateY(-12px);opacity:0}}
+.hit{opacity:0;animation:hit 5s linear infinite}@keyframes hit{0%,65%{opacity:0}67%{opacity:.5}80%,100%{opacity:0}}`,
     motif: m,
   });
 });
@@ -275,85 +397,95 @@ write('card-serp', (t) => {
   const map = [2, 0, 5, 1, 9, 3, 4, 8, 6, 7];
   let m = '';
   for (let i = 0; i < 10; i++) {
-    m += `<rect x="0" y="${i * 15}" width="${38 - i * 2}" height="8" rx="2" fill="${t.ink}" opacity=".8"/>`;
-    m += `<rect x="${122 + i * 2}" y="${map[i] * 15}" width="${38 - i * 2}" height="8" rx="2" fill="${t.faint}"/>`;
-    m += `<path d="M42 ${i * 15 + 4}C80 ${i * 15 + 4} 80 ${map[i] * 15 + 4} 118 ${map[i] * 15 + 4}" class="st ln" stroke-width="1" style="animation-delay:${i * 0.12}s"/>`;
+    m += `<text x="0" y="${i * 15 + 8}" class="mono faint" font-size="9">${i + 1}</text>`;
+    m += `<rect x="14" y="${i * 15}" width="${38 - i * 2}" height="8" rx="2" fill="${t.ink}" opacity=".8"/>`;
+    m += `<rect x="${136 + i * 2}" y="${map[i] * 15}" width="${38 - i * 2}" height="8" rx="2" fill="${t.faint}"/>`;
+    m += `<path d="M56 ${i * 15 + 4}C94 ${i * 15 + 4} 94 ${map[i] * 15 + 4} 132 ${map[i] * 15 + 4}" class="st ln" stroke-width="1" style="animation-delay:${i * 0.12}s"/>`;
   }
-  m += `<text x="0" y="168" class="mono faint" font-size="10">Google</text><text x="128" y="168" class="mono faint" font-size="10">Bing</text>`;
+  m += `<text x="14" y="168" class="mono faint" font-size="10">Google</text><text x="142" y="168" class="mono faint" font-size="10">Bing</text>`;
   return card('serp', t, {
     title: 'serp-compare',
-    lines: ['Le top 10 de Google et de Bing', 'côte à côte pour une même recherche.', 'Cache 24 h, démo sans clé d’API.'],
+    lines: ['Google and Bing top 10, side by side,', 'for the same search. 24 h cache, and', 'the demo runs without an API key.'],
     tags: 'TypeScript · Docker · rate limiting',
     css: `.ln{stroke-dasharray:140;stroke-dashoffset:140;opacity:.6;animation:ln 4.5s ease-out infinite}@keyframes ln{0%{stroke-dashoffset:140}35%,85%{stroke-dashoffset:0}100%{stroke-dashoffset:0;opacity:0}}`,
     motif: m,
   });
 });
 
-write('card-radar', (t) => {
-  const blips = [[40, -35, 0.6], [-50, 20, 1.6], [25, 52, 2.4], [-20, -55, 3.2], [60, 15, 0.2]];
-  let m = `<g transform="translate(80,80)">`;
-  for (const r of [26, 52, 76]) m += `<circle r="${r}" fill="none" stroke="${t.line}"/>`;
-  m += `<line x1="-78" y1="0" x2="78" y2="0" stroke="${t.line}"/><line x1="0" y1="-78" x2="0" y2="78" stroke="${t.line}"/>`;
-  m += `<g class="sw"><path d="M0 0L76 0A76 76 0 0 0 65.8 -38Z" fill="${t.ink}" opacity=".18"/><line x1="0" y1="0" x2="76" y2="0" stroke="${t.ink}" stroke-width="1.5"/></g>`;
-  for (const [x, y, d] of blips) m += `<circle cx="${x}" cy="${y}" r="3.5" fill="${t.ink}" class="bl" style="animation-delay:${d}s"/>`;
-  m += `</g>`;
-  return card('radar', t, {
-    title: 'radartech',
-    lines: ['Ma veille tech à moi : actus IA,', 'emploi remote, bourses, financements.', 'Trié et vérifié automatiquement.'],
-    tags: 'Python · FastAPI · React · Docker',
-    css: `.sw{transform-origin:0 0;animation:sw 4s linear infinite}@keyframes sw{to{transform:rotate(-360deg)}}
-.bl{opacity:0;animation:bl 4s ease-out infinite}@keyframes bl{0%{opacity:0}5%{opacity:1}60%{opacity:.15}100%{opacity:0}}`,
-    motif: m,
-  });
-});
-
-write('card-engine', (t) => card('engine', t, {
-  title: 'my-engine',
-  lines: ['Un petit moteur de jeu 2D', 'en JavaScript, pour des jeux web', 'simples. Publié sur npm.'],
-  tags: 'JavaScript · Canvas · npm',
-  css: `.bx{transform-box:fill-box;transform-origin:bottom center;animation:bx 1.4s cubic-bezier(.4,0,.6,1) infinite}
-@keyframes bx{0%,100%{transform:translateY(0) scale(1.25,.75)}12%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-92px) scale(.92,1.08)}88%{transform:translateY(0) scale(1,1)}}
-.sh{transform-box:fill-box;transform-origin:center;animation:sh 1.4s cubic-bezier(.4,0,.6,1) infinite}@keyframes sh{0%,100%{transform:scaleX(1);opacity:.5}50%{transform:scaleX(.45);opacity:.15}}`,
-  motif: `<line x1="10" y1="150" x2="150" y2="150" stroke="${t.line}"/>
-<ellipse cx="80" cy="152" rx="20" ry="3" fill="${t.ink}" class="sh"/>
-<rect x="66" y="122" width="28" height="28" rx="3" fill="${t.ink}" class="bx"/>
-${[0, 1, 2, 3, 4, 5, 6].map((i) => `<rect x="${12 + i * 20}" y="154" width="16" height="4" fill="${t.line}"/>`).join('')}`,
-}));
-
-// ================= 4. Ce que j'ai appris en mesurant =================
+// ================= 6. Résultats des évals =================
 write('evals-story', (t) => {
   const W = 1200, H = 300;
-  const rows = [['Réponses justes', 95, 60, 'hausse'], ['Citations exactes', 55, 60], ['Dit « je ne sais pas » hors sujet', 0, 100], ['Injections qui passent (plus bas = mieux)', 0, 0]];
-  let b = '', css = '';
+  const rows = [['Correct answers', 95, 60], ['Correct citations', 55, 60], ['Says "I don\'t know" when off-topic', 0, 100], ['Prompt injections that got through (lower is better)', 0, 0]];
+  let b = '';
   rows.forEach(([lab, v1, v2], i) => {
     const y = 96 + i * 46;
     b += `<text x="60" y="${y + 12}" class="sans ink" font-size="15">${esc(lab)}</text>`;
-    b += `<rect x="440" y="${y}" width="560" height="6" rx="3" fill="${t.line}" opacity=".6"/>`;
-    b += `<rect x="440" y="${y}" width="${Math.max(3, v1 * 5.6)}" height="6" rx="3" fill="${t.faint}" class="gr" style="animation-delay:${0.2 + i * 0.15}s"/>`;
-    b += `<rect x="440" y="${y + 10}" width="560" height="6" rx="3" fill="${t.line}" opacity=".6"/>`;
-    b += `<rect x="440" y="${y + 10}" width="${Math.max(3, v2 * 5.6)}" height="6" rx="3" fill="${t.ink}" class="gr" style="animation-delay:${0.35 + i * 0.15}s"/>`;
-    b += `<text x="1020" y="${y + 7}" class="mono faint" font-size="12">v1 ${v1} %</text><text x="1020" y="${y + 18}" class="mono ink" font-size="12">v2 ${v2} %</text>`;
+    b += `<rect x="460" y="${y}" width="540" height="6" rx="3" fill="${t.line}" opacity=".6"/>`;
+    b += `<rect x="460" y="${y}" width="${Math.max(3, v1 * 5.4)}" height="6" rx="3" fill="${t.faint}" class="gr" style="animation-delay:${0.2 + i * 0.15}s"/>`;
+    b += `<rect x="460" y="${y + 10}" width="540" height="6" rx="3" fill="${t.line}" opacity=".6"/>`;
+    b += `<rect x="460" y="${y + 10}" width="${Math.max(3, v2 * 5.4)}" height="6" rx="3" fill="${t.ink}" class="gr" style="animation-delay:${0.35 + i * 0.15}s"/>`;
+    b += `<text x="1020" y="${y + 7}" class="mono faint" font-size="12">v1 ${v1}%</text><text x="1020" y="${y + 18}" class="mono ink" font-size="12">v2 ${v2}%</text>`;
   });
-  css = `.gr{transform-box:fill-box;transform-origin:left;animation:gr 1.6s cubic-bezier(.2,.7,.2,1) both}@keyframes gr{from{transform:scaleX(0)}to{transform:scaleX(1)}}`;
+  const css = `.gr{transform-box:fill-box;transform-origin:left;animation:gr 1.6s cubic-bezier(.2,.7,.2,1) both}@keyframes gr{from{transform:scaleX(0)}to{transform:scaleX(1)}}`;
   const body = `
-<text x="60" y="44" class="mono faint" font-size="13">agent-evals  ·  30 cas  ·  gemini-3.1-flash-lite  ·  octobre 2026</text>
-<text x="60" y="70" class="sans ink" font-size="20">v1 = prompt simple, v2 = prompt durci</text>
+<text x="60" y="44" class="mono faint" font-size="13">agent-evals  ·  30 cases  ·  gemini-3.1-flash-lite  ·  October 2026</text>
+<text x="60" y="70" class="sans ink" font-size="20">v1 = basic prompt, v2 = stricter prompt</text>
 ${b}
 <text x="60" y="282" class="mono faint" font-size="12">▪ v1</text><text x="110" y="282" class="mono ink" font-size="12">▪ v2</text>
 `;
-  return svg(W, H, t, css, body, "Résultats d'agent-evals, v1 contre v2");
+  return svg(W, H, t, css, body, 'agent-evals results, v1 vs v2');
 });
 
-// ================= 5. Pied de page =================
+// ================= 7. Graphe git =================
+write('graph', (t) => {
+  const W = 1200, H = 210, T = 11, END = 42; // le main se dessine de 0 à END %
+  const at = (x) => r2(((x - 60) / 1080) * END);
+  let css = `.ln{fill:none;stroke-width:2.5;stroke-linecap:round}`;
+  let body = `<text x="60" y="26" class="mono faint" font-size="13">$ git log --graph</text>`;
+  const line = (id, d, x1, x2, col) => {
+    const a = at(x1), b = at(x2);
+    css += `@keyframes ${id}{0%,${a}%{stroke-dashoffset:1;opacity:1}${b}%,88%{stroke-dashoffset:0;opacity:1}95%,100%{stroke-dashoffset:0;opacity:0}}#${id}{stroke-dasharray:1;stroke-dashoffset:1;animation:${id} ${T}s linear infinite}`;
+    body += `<path id="${id}" d="${d}" pathLength="1" class="ln" stroke="${col}"/>`;
+  };
+  line('gm', 'M60 115 H1140', 60, 1140, t.faint);
+  line('gf', 'M240 115 C270 115 270 65 300 65 H540 C570 65 570 115 600 115', 240, 600, t.ink);
+  line('gx', 'M660 115 C690 115 690 165 720 165 H900 C930 165 930 115 960 115', 660, 960, t.ink);
+  let n = 0;
+  const dot = (x, y, big = false) => {
+    const id = `c${n++}`, a = at(x);
+    css += `@keyframes ${id}{0%,${a}%{opacity:0;transform:scale(.2)}${r2(a + 2)}%,88%{opacity:1;transform:scale(1)}95%,100%{opacity:0}}#${id}{opacity:0;transform-box:fill-box;transform-origin:center;animation:${id} ${T}s ease-out infinite}`;
+    body += big
+      ? `<circle id="${id}" cx="${x}" cy="${y}" r="8" fill="${t.bg}" stroke="${t.ink}" stroke-width="2.5"/>`
+      : `<circle id="${id}" cx="${x}" cy="${y}" r="6" fill="${t.ink}"/>`;
+  };
+  const label = (x, y, txt, from, anchor = 'start') => {
+    const id = `t${n++}`, a = at(from);
+    css += `@keyframes ${id}{0%,${a}%{opacity:0}${r2(a + 3)}%,88%{opacity:1}95%,100%{opacity:0}}#${id}{opacity:0;animation:${id} ${T}s linear infinite}`;
+    body += `<text id="${id}" x="${x}" y="${y}" text-anchor="${anchor}" class="mono muted" font-size="12">${esc(txt)}</text>`;
+  };
+  [60, 150, 240].forEach((x) => dot(x, 115));
+  [330, 420, 510].forEach((x) => dot(x, 65));
+  dot(600, 115, true); dot(660, 115);
+  [750, 840].forEach((x) => dot(x, 165));
+  dot(960, 115, true); dot(1050, 115); dot(1140, 115);
+  label(60, 143, 'main', 60);
+  label(300, 47, 'evals/v2', 300);
+  label(720, 195, 'fix/empty-answers', 720);
+  label(1140, 92, 'HEAD', 1140, 'middle');
+  css += `.head{fill:none;stroke:${t.ink};stroke-width:1.5;transform-box:fill-box;transform-origin:center;opacity:0;animation:head 2s ease-out ${r2((END / 100) * T)}s infinite}@keyframes head{0%{transform:scale(1);opacity:.8}100%{transform:scale(2.6);opacity:0}}`;
+  body += `<circle cx="1140" cy="115" r="7" class="head"/>`;
+  return svg(W, H, t, css, body, 'Animated git graph with two branches merging into main');
+});
+
+// ================= 8. Pied de page =================
 write('footer', (t) => {
-  const W = 1200, H = 120;
-  // une trace : ligne plate, une impulsion qui la traverse
+  const W = 1200, H = 110;
   const css = `.tr{stroke:${t.line};stroke-width:1.5;fill:none}
 .pu{stroke:${t.ink};stroke-width:2;fill:none;stroke-dasharray:90 1400;animation:pu 4s linear infinite}@keyframes pu{from{stroke-dashoffset:90}to{stroke-dashoffset:-1400}}`;
   const d = `M0 50H520L540 50L552 22L566 78L580 34L590 50H1200`;
   const body = `<path d="${d}" class="tr"/><path d="${d}" class="pu"/>
-<text x="600" y="102" text-anchor="middle" class="mono faint" font-size="13">kenzoob  ·  Cotonou, Bénin  ·  UTC+1</text>`;
-  return svg(W, H, t, css, body, 'Pied de page');
+<text x="600" y="100" text-anchor="middle" class="mono faint" font-size="13">kenzoob  ·  npm: @kenzoobryan27</text>`;
+  return svg(W, H, t, css, body, 'Footer');
 });
 
 console.log('SVG générés dans', OUT);
