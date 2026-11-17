@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="580" height="210" viewBox="0 0 580 210" xml:space="preserve" role="img" aria-label="my-engine : Un petit moteur de jeu 2D en JavaScript, pour des jeux web simples. Publié sur npm.">
+<title>my-engine : Un petit moteur de jeu 2D en JavaScript, pour des jeux web simples. Publié sur npm.</title>
+<style>
+.ink{fill:#e6edf3}.muted{fill:#9198a1}.faint{fill:#656c76}
+text{white-space:pre}.mono{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace}.sans{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif}.serif{font-family:'Iowan Old Style','Palatino Linotype',Palatino,'Book Antiqua',Georgia,serif}
+
+.box{fill:#151b23;stroke:#3d444d}
+.st{stroke:#e6edf3;fill:none}
+.bx{transform-box:fill-box;transform-origin:bottom center;animation:bx 1.4s cubic-bezier(.4,0,.6,1) infinite}
+@keyframes bx{0%,100%{transform:translateY(0) scale(1.25,.75)}12%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-92px) scale(.92,1.08)}88%{transform:translateY(0) scale(1,1)}}
+.sh{transform-box:fill-box;transform-origin:center;animation:sh 1.4s cubic-bezier(.4,0,.6,1) infinite}@keyframes sh{0%,100%{transform:scaleX(1);opacity:.5}50%{transform:scaleX(.45);opacity:.15}}
+</style>
+
+<rect x="1" y="1" width="578" height="208" rx="14" class="box"/>
+<text x="28" y="48" class="mono ink" font-size="19">my-engine</text>
+<text x="28" y="84" class="sans muted" font-size="15">Un petit moteur de jeu 2D</text><text x="28" y="106" class="sans muted" font-size="15">en JavaScript, pour des jeux web</text><text x="28" y="128" class="sans muted" font-size="15">simples. Publié sur npm.</text>
+<text x="28" y="182" class="mono faint" font-size="12">JavaScript · Canvas · npm</text>
+<g transform="translate(400,24)"><line x1="10" y1="150" x2="150" y2="150" stroke="#3d444d"/>
+<ellipse cx="80" cy="152" rx="20" ry="3" fill="#e6edf3" class="sh"/>
+<rect x="66" y="122" width="28" height="28" rx="3" fill="#e6edf3" class="bx"/>
+<rect x="12" y="154" width="16" height="4" fill="#3d444d"/><rect x="32" y="154" width="16" height="4" fill="#3d444d"/><rect x="52" y="154" width="16" height="4" fill="#3d444d"/><rect x="72" y="154" width="16" height="4" fill="#3d444d"/><rect x="92" y="154" width="16" height="4" fill="#3d444d"/><rect x="112" y="154" width="16" height="4" fill="#3d444d"/><rect x="132" y="154" width="16" height="4" fill="#3d444d"/></g>
+
+</svg>

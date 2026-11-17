@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="580" height="210" viewBox="0 0 580 210" xml:space="preserve" role="img" aria-label="agent-evals : Un agent RAG sur la doc Node.js, et 30 cas de test pour savoir si on peut le croire.">
+<title>agent-evals : Un agent RAG sur la doc Node.js, et 30 cas de test pour savoir si on peut le croire.</title>
+<style>
+.ink{fill:#1f2328}.muted{fill:#59636e}.faint{fill:#8c959f}
+text{white-space:pre}.mono{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace}.sans{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif}.serif{font-family:'Iowan Old Style','Palatino Linotype',Palatino,'Book Antiqua',Georgia,serif}
+
+.box{fill:#f6f8fa;stroke:#d1d9e0}
+.st{stroke:#1f2328;fill:none}
+.g{transform-box:fill-box;transform-origin:bottom;animation:g 4s cubic-bezier(.2,.7,.2,1) infinite}@keyframes g{0%{transform:scaleY(0)}25%,85%{transform:scaleY(1)}100%{transform:scaleY(0)}}
+</style>
+
+<rect x="1" y="1" width="578" height="208" rx="14" class="box"/>
+<text x="28" y="48" class="mono ink" font-size="19">agent-evals</text>
+<text x="28" y="84" class="sans muted" font-size="15">Un agent RAG sur la doc Node.js,</text><text x="28" y="106" class="sans muted" font-size="15">et 30 cas de test pour savoir</text><text x="28" y="128" class="sans muted" font-size="15">si on peut le croire.</text>
+<text x="28" y="182" class="mono faint" font-size="12">TypeScript · LLM-as-judge · injections · CI</text>
+<g transform="translate(400,24)"><rect x="0" y="15.499999999999986" width="14" height="104.50000000000001" fill="#8c959f" class="g" style="animation-delay:0s"/>
+<rect x="16" y="54" width="14" height="66" fill="#1f2328" class="g" style="animation-delay:0.1s"/>
+<text x="15" y="138" text-anchor="middle" class="mono faint" font-size="10">corr.</text><rect x="42" y="59.49999999999999" width="14" height="60.50000000000001" fill="#8c959f" class="g" style="animation-delay:0.15s"/>
+<rect x="58" y="54" width="14" height="66" fill="#1f2328" class="g" style="animation-delay:0.25s"/>
+<text x="57" y="138" text-anchor="middle" class="mono faint" font-size="10">cit.</text><rect x="84" y="118" width="14" height="2" fill="#8c959f" class="g" style="animation-delay:0.3s"/>
+<rect x="100" y="9.999999999999986" width="14" height="110.00000000000001" fill="#1f2328" class="g" style="animation-delay:0.4s"/>
+<text x="99" y="138" text-anchor="middle" class="mono faint" font-size="10">abst.</text><rect x="126" y="118" width="14" height="2" fill="#8c959f" class="g" style="animation-delay:0.44999999999999996s"/>
+<rect x="142" y="118" width="14" height="2" fill="#1f2328" class="g" style="animation-delay:0.5499999999999999s"/>
+<text x="141" y="138" text-anchor="middle" class="mono faint" font-size="10">inj.</text><text x="0" y="158" class="mono faint" font-size="10">▪ v1   </text><text x="48" y="158" class="mono ink" font-size="10">▪ v2</text></g>
+
+</svg>
