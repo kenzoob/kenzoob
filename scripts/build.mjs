@@ -9,8 +9,10 @@ const OUT = join(dirname(fileURLToPath(import.meta.url)), '..', 'assets');
 mkdirSync(OUT, { recursive: true });
 
 const THEMES = {
-  light: { ink: '#1f2328', muted: '#59636e', faint: '#8c959f', line: '#d1d9e0', card: '#f6f8fa', bg: '#ffffff', ok: '#1a7f37', ko: '#cf222e' },
-  dark: { ink: '#e6edf3', muted: '#9198a1', faint: '#656c76', line: '#3d444d', card: '#151b23', bg: '#0d1117', ok: '#3fb950', ko: '#f85149' },
+  light: { ink: '#1f2328', muted: '#59636e', faint: '#8c959f', line: '#d1d9e0', card: '#f6f8fa', bg: '#ffffff', ok: '#1a7f37', ko: '#cf222e',
+    violet: '#8250df', blue: '#0969da', cyan: '#0e8a96', pink: '#d1388f', orange: '#e2620e', yellow: '#d4a000' },
+  dark: { ink: '#e6edf3', muted: '#9198a1', faint: '#656c76', line: '#3d444d', card: '#151b23', bg: '#0d1117', ok: '#3fb950', ko: '#f85149',
+    violet: '#b083ff', blue: '#4f9dff', cyan: '#39d0d8', pink: '#ff7ac6', orange: '#ff9548', yellow: '#ffd24a' },
 };
 
 const MONO = `ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace`;
@@ -97,33 +99,35 @@ write('header', (t) => {
   }));
   const css = `
 .grid circle{fill:${t.ink};opacity:.09}
-.dots circle{fill:${t.ink};opacity:0;animation:pop .5s ease-out both,wave 6s ease-in-out infinite}
+.dots circle{fill:url(#hg);opacity:0;animation:pop .5s ease-out both,wave 6s ease-in-out infinite}
 @keyframes pop{from{opacity:0}to{opacity:.55}}
 @keyframes wave{0%,100%{opacity:.55}8%{opacity:1}24%{opacity:.55}}
-.cur circle{fill:${t.ink};animation:blink 1.1s steps(1) infinite}
+.cur circle{fill:${t.cyan};animation:blink 1.1s steps(1) infinite}
 @keyframes blink{50%{opacity:0}}
 .up{opacity:0;animation:up .9s cubic-bezier(.2,.7,.2,1) both}
 @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-.rule{stroke:${t.line};stroke-width:1;stroke-dasharray:720;stroke-dashoffset:720;animation:draw 1.4s .2s ease-out forwards}
+.rule{stroke:url(#hr);stroke-width:2;stroke-dasharray:720;stroke-dashoffset:720;animation:draw 1.4s .2s ease-out forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 .box{fill:${t.card};stroke:${t.line}}
 `;
   const body = `
-<text x="60" y="72" class="mono muted up" font-size="14" style="animation-delay:.1s">@kenzoob</text>
+<linearGradient id="hg" gradientUnits="userSpaceOnUse" x1="838" y1="82" x2="1172" y2="380"><stop offset="0" stop-color="${t.violet}"/><stop offset=".5" stop-color="${t.pink}"/><stop offset="1" stop-color="${t.orange}"/></linearGradient>
+<linearGradient id="hr" gradientUnits="userSpaceOnUse" x1="60" y1="0" x2="780" y2="0"><stop offset="0" stop-color="${t.violet}"/><stop offset=".5" stop-color="${t.pink}"/><stop offset="1" stop-color="${t.orange}"/></linearGradient>
+<text x="60" y="72" class="mono up" font-size="14" fill="${t.violet}" style="animation-delay:.1s">@kenzoob</text>
 <text x="54" y="168" class="serif ink up" font-size="82" style="animation-delay:.25s">Kenzo O'Bryan</text>
 <line x1="60" y1="196" x2="780" y2="196" class="rule"/>
 <text x="60" y="236" class="sans muted up" font-size="20" style="animation-delay:.6s">Fullstack developer. In the evenings I build tools for LLM apps,</text>
 <text x="60" y="264" class="sans muted up" font-size="20" style="animation-delay:.7s">mostly the code that runs when the model or the API fails.</text>
 <g class="up" style="animation-delay:.9s">
 <rect x="60" y="298" width="720" height="56" rx="10" class="box"/>
-<text x="80" y="332" class="mono faint" font-size="15">working on ›</text>
+<text x="80" y="332" class="mono" font-size="15" fill="${t.pink}">working on ›</text>
 </g>
 ${typer('ty', [
     'a circuit breaker for LLM API calls',
     'evals that catch my RAG agent making things up',
     'an MCP server for GitHub issues, read-only by default',
   ], { x: 196, y: 332, cw: 9.05, size: 15, cls: 'mono ink" font-size="15', t })}
-<text x="60" y="412" class="mono faint up" font-size="13" style="animation-delay:1.1s">TypeScript  ·  Node.js  ·  Python  ·  Flutter  ·  C  ·  FastAPI  ·  React  ·  Docker</text>
+<text x="60" y="412" class="mono faint up" font-size="13" style="animation-delay:1.1s">${['TypeScript', 'Node.js', 'Python', 'Flutter', 'C', 'FastAPI', 'React', 'Docker'].map((s, i) => `<tspan fill="${[t.blue, t.ok, t.yellow, t.cyan, t.violet, t.pink, t.blue, t.orange][i]}">${s}</tspan>`).join('  ·  ')}</text>
 <g class="grid">${grid}</g>
 <g class="dots">${dots}</g>
 <g class="cur">${cur}</g>
@@ -161,32 +165,36 @@ write('night', (t) => {
     const segs = [];
     let x = ind * 16;
     const n = 1 + Math.floor(R() * 3);
-    for (let k = 0; k < n; k++) { const w = 14 + Math.floor(R() * 70); segs.push([x, w, R() < 0.35 ? 'ink' : 'faint']); x += w + 7; }
+    for (let k = 0; k < n; k++) { const w = 14 + Math.floor(R() * 70); segs.push([x, w, ['violet', 'blue', 'pink', 'ok', 'yellow', 'faint', 'faint', 'cyan'][Math.floor(R() * 8)]]); x += w + 7; }
     lines.push(segs);
     ind = Math.max(0, Math.min(3, ind + (R() < 0.3 ? 1 : R() < 0.5 ? -1 : 0)));
   }
   for (let rep = 0; rep < 2; rep++) lines.forEach((segs, i) => {
     const y = 122 + (rep * 26 + i) * 12;
-    for (const [x, w, c] of segs) code += `<rect x="${756 + x}" y="${y}" width="${Math.min(w, 262 - x)}" height="5" rx="2" class="${c}" opacity="${c === 'ink' ? 0.8 : 0.6}"/>`;
+    for (const [x, w, c] of segs) code += `<rect x="${756 + x}" y="${y}" width="${Math.min(w, 262 - x)}" height="5" rx="2" fill="${t[c]}" opacity="${c === 'faint' ? 0.6 : 0.9}"/>`;
   });
   const css = `
 .fr{fill:none;stroke:${t.ink};stroke-width:1.5}
 .st{fill:${t.ink};animation:tw 4s ease-in-out infinite}@keyframes tw{0%,100%{opacity:.25}50%{opacity:1}}
 .city rect{fill:${t.faint};opacity:.3}
-.lw{fill:${t.ink};opacity:0;animation:lw 9s steps(1) infinite}@keyframes lw{0%{opacity:.7}40%{opacity:0}70%{opacity:.7}}
+.lw{fill:${t.yellow};opacity:0;animation:lw 9s steps(1) infinite}@keyframes lw{0%{opacity:.7}40%{opacity:0}70%{opacity:.7}}
 .scroll{animation:sc 22s linear infinite}@keyframes sc{to{transform:translateY(-312px)}}
-.cone{fill:${t.ink};animation:fl 5s ease-in-out infinite}@keyframes fl{0%,100%{opacity:.05}50%{opacity:.08}}
-.sm{fill:none;stroke:${t.faint};stroke-width:1.6;stroke-linecap:round;animation:sm 3s ease-in-out infinite}
+.cone{fill:url(#cone);animation:fl 5s ease-in-out infinite}@keyframes fl{0%,100%{opacity:.75}50%{opacity:1}}
+.sm{fill:none;stroke:${t.pink};stroke-width:1.6;stroke-linecap:round;animation:sm 3s ease-in-out infinite}
 @keyframes sm{0%{opacity:0;transform:translateY(4px)}30%{opacity:.9}100%{opacity:0;transform:translateY(-12px)}}
 .bk{animation:blink 1s steps(1) infinite}@keyframes blink{50%{fill-opacity:0}}
 `;
   const body = `
 <clipPath id="win"><rect x="71" y="25" width="428" height="238"/></clipPath>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${t.violet}" stop-opacity=".32"/><stop offset=".65" stop-color="${t.pink}" stop-opacity=".16"/><stop offset="1" stop-color="${t.orange}" stop-opacity=".2"/></linearGradient>
+<linearGradient id="cone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${t.yellow}" stop-opacity=".45"/><stop offset="1" stop-color="${t.yellow}" stop-opacity=".04"/></linearGradient>
+<mask id="moon"><rect width="1200" height="330" fill="#fff"/><circle cx="431" cy="71" r="20" fill="#000"/></mask>
 <g clip-path="url(#win)">
+<rect x="71" y="25" width="428" height="238" fill="url(#sky)"/>
 ${stars}
-<circle cx="420" cy="78" r="22" fill="${t.ink}" opacity=".85"/><circle cx="431" cy="71" r="20" fill="${t.bg}"/>
+<circle cx="420" cy="78" r="22" fill="${t.yellow}" mask="url(#moon)"/>
 <g class="city">${city}</g>
-<line x1="223" y1="132" x2="223" y2="110" stroke="${t.faint}" stroke-width="1.5"/><circle cx="223" cy="108" r="2" fill="${t.ink}" class="st"/>
+<line x1="223" y1="132" x2="223" y2="110" stroke="${t.faint}" stroke-width="1.5"/><circle cx="223" cy="108" r="2.4" fill="${t.ko}" class="st"/>
 ${lit}
 </g>
 <rect x="70" y="24" width="430" height="240" rx="6" class="fr"/>
@@ -196,15 +204,15 @@ ${lit}
 <polygon points="566,170 620,160 760,292 560,292" class="cone"/>
 <ellipse cx="610" cy="289" rx="26" ry="4" fill="${t.ink}"/>
 <polyline points="610,287 642,202 598,152" fill="none" stroke="${t.ink}" stroke-width="3" stroke-linejoin="round"/>
-<path d="M574 142 L608 128 L624 160 L562 172 Z" fill="${t.ink}"/>
+<path d="M574 142 L608 128 L624 160 L562 172 Z" fill="${t.orange}"/>
 <rect x="740" y="104" width="300" height="180" rx="8" fill="${t.card}" class="fr"/>
 <clipPath id="scr"><rect x="752" y="116" width="276" height="156" rx="3"/></clipPath>
 <g clip-path="url(#scr)"><g class="scroll">${code}</g></g>
 <path d="M712 284 H1068 L1058 292 H722 Z" fill="${t.ink}"/>
-<rect x="1092" y="254" width="34" height="38" rx="4" class="fr"/>
+<rect x="1092" y="254" width="34" height="38" rx="4" fill="${t.pink}" fill-opacity=".25" class="fr"/>
 <path d="M1126 262 q14 0 14 12 q0 12 -14 12" class="fr"/>
 ${[1100, 1109, 1118].map((x, i) => `<path d="M${x} 246 q-5 -7 0 -14 q5 -7 0 -14" class="sm" style="animation-delay:${i * 0.9}s"/>`).join('')}
-<text x="70" y="320" class="mono faint" font-size="13">23<tspan class="bk">:</tspan>14</text>
+<text x="70" y="320" class="mono" fill="${t.cyan}" font-size="13">23<tspan class="bk">:</tspan>14</text>
 `;
   return svg(W, H, t, css, body, 'A desk at night: laptop scrolling code, lamp, mug, city through the window');
 });
@@ -230,7 +238,7 @@ write('board', (t) => {
       const last = m === rows.length - 1;
       const kt = last ? `0;${(off / T).toFixed(4)};${a.toFixed(4)};1` : `0;${a.toFixed(4)};${b.toFixed(4)};1`;
       const vals = last ? '1;0;1;1' : '0;1;0;0';
-      const col = m === rows.length - 1 ? t.ok : m < 2 ? t.ko : t.ink;
+      const col = [t.ko, t.orange, t.yellow, t.violet, t.ok][m];
       cells += `<text x="${r2(x + CW / 2)}" y="${y0 + 46}" text-anchor="middle" class="mono" font-size="34" font-weight="700" fill="${col}" opacity="${last ? 1 : 0}"><animate attributeName="opacity" dur="${T}s" repeatCount="indefinite" calcMode="discrete" keyTimes="${kt}" values="${vals}"/>${esc(ch)}</text>`;
     });
     cells += `<line x1="${x}" y1="${y0 + CH / 2}" x2="${r2(x + CW)}" y2="${y0 + CH / 2}" stroke="${t.bg}" stroke-width="2"/>`;
@@ -245,17 +253,17 @@ write('board', (t) => {
 // ================= 4. resilient-llm en action =================
 write('resilience', (t) => {
   const W = 1200, H = 420, T = 12;
-  const pkt = (id, x1, y1, x2, y2, a, b) => {
+  const pkt = (id, x1, y1, x2, y2, a, b, col) => {
     const dx = x2 - x1, dy = y2 - y1;
     return { css: `@keyframes ${id}{0%,${a - 0.01}%{opacity:0;transform:translate(0,0)}${a}%{opacity:1;transform:translate(0,0)}${b}%{opacity:1;transform:translate(${dx}px,${dy}px)}${b + 0.01}%,100%{opacity:0;transform:translate(${dx}px,${dy}px)}}#${id}{animation:${id} ${T}s linear infinite}`,
-      el: `<circle id="${id}" cx="${x1}" cy="${y1}" r="6" fill="${t.ink}"/>` };
+      el: `<circle id="${id}" cx="${x1}" cy="${y1}" r="6" fill="${col || t.blue}"/>` };
   };
   const win = (id, a, b) => `@keyframes ${id}{0%,${a - 0.01}%{opacity:0}${a}%,${b}%{opacity:1}${b + 0.01}%,100%{opacity:0}}.${id}{opacity:0;animation:${id} ${T}s linear infinite}`;
   const A = [250, 175], R1 = [440, 175], R2 = [710, 175], AN = [920, 110], OA = [920, 240];
   const ps = [
     pkt('p1', ...A, ...R1, 2, 8), pkt('p2', ...R2, ...AN, 9, 15),
     pkt('p3', ...R2, ...AN, 27, 33), pkt('p4', ...R2, ...AN, 44, 50),
-    pkt('p5', ...R2, ...OA, 58, 64), pkt('p6', ...OA, ...R2, 67, 73), pkt('p7', ...R1, ...A, 74, 80),
+    pkt('p5', ...R2, ...OA, 58, 64), pkt('p6', ...OA, ...R2, 67, 73, t.ok), pkt('p7', ...R1, ...A, 74, 80, t.ok),
   ];
   const css = `
 .box{fill:${t.card};stroke:${t.line};stroke-width:1.2}
@@ -281,12 +289,12 @@ ${win('done', 80, 96)}
 <text x="60" y="74" class="sans ink" font-size="21">Anthropic keeps failing, your request still gets an answer</text>
 <path d="M${A[0]} ${A[1]}H${R1[0]}" class="wire"/>
 <path d="M${R2[0]} ${R2[1]}L${AN[0]} ${AN[1]}" class="wire"/>
-<path d="M${R2[0]} ${R2[1]}L${OA[0]} ${OA[1]}" class="wire d"/>
+<path d="M${R2[0]} ${R2[1]}L${OA[0]} ${OA[1]}" class="wire d" style="stroke:${t.ok}"/>
 <rect x="60" y="150" width="190" height="50" rx="10" class="box"/>
 <text x="155" y="181" text-anchor="middle" class="mono ink" font-size="15">your app</text>
 <text x="155" y="226" text-anchor="middle" class="mono done" font-size="13" fill="${t.ok}">✓ got a response</text>
-<rect x="440" y="140" width="270" height="70" rx="12" class="box"/>
-<text x="575" y="170" text-anchor="middle" class="mono ink" font-size="16">resilient-llm</text>
+<rect x="440" y="140" width="270" height="70" rx="12" class="box" style="stroke:${t.violet};stroke-width:2"/>
+<text x="575" y="170" text-anchor="middle" class="mono" fill="${t.violet}" font-size="16">resilient-llm</text>
 <g class="mono faint" font-size="12" text-anchor="middle">
 <text x="575" y="193" class="f0">failures 0/5   circuit closed</text>
 <text x="575" y="193" class="f1">failures 1/5   circuit closed</text>
@@ -301,13 +309,13 @@ ${badge('b1', 1076, 115, '429', t.ko)}${badge('b2', 1076, 115, '503', t.ko)}${ba
 ${badge('b4', 1076, 245, '200', t.ok)}
 ${ps.map((p) => p.el).join('')}
 <line x1="60" y1="290" x2="1140" y2="290" stroke="${t.line}"/>
-${logs.map(([to, code, n, msg, col], i) => `<text y="${322 + i * 24}" class="mono l${i + 1}" font-size="13"><tspan x="60" class="muted">${esc(to)}</tspan><tspan x="200" fill="${col}">${code}</tspan><tspan x="250" class="faint">${n}</tspan><tspan x="330" class="ink">${esc(msg)}</tspan></text>`).join('\n')}
+${logs.map(([to, code, n, msg, col], i) => `<text y="${322 + i * 24}" class="mono l${i + 1}" font-size="13"><tspan x="60" fill="${t.blue}">${esc(to)}</tspan><tspan x="200" fill="${col}">${code}</tspan><tspan x="250" class="faint">${n}</tspan><tspan x="330" class="ink">${esc(msg)}</tspan></text>`).join('\n')}
 `;
   return svg(W, H, t, css, body, 'Animation: resilient-llm retries, then falls back to another provider');
 });
 
 // ================= 5. Cartes de projets =================
-function card(name, t, { title, lines, tags, motif, css = '' }) {
+function card(name, t, { title, lines, tags, motif, css = '', accent }) {
   const W = 580, H = 210;
   const base = `
 .box{fill:${t.card};stroke:${t.line}}
@@ -315,8 +323,9 @@ function card(name, t, { title, lines, tags, motif, css = '' }) {
 ${css}`;
   const body = `
 <rect x="1" y="1" width="${W - 2}" height="${H - 2}" rx="14" class="box"/>
-<text x="28" y="48" class="mono ink" font-size="19">${esc(title)}</text>
-${lines.map((l, i) => `<text x="28" y="${84 + i * 22}" class="sans muted" font-size="15">${esc(l)}</text>`).join('')}
+<rect x="28" y="60" width="44" height="3" rx="1.5" fill="${accent}"/>
+<text x="28" y="48" class="mono" fill="${accent}" font-size="19">${esc(title)}</text>
+${lines.map((l, i) => `<text x="28" y="${94 + i * 22}" class="sans muted" font-size="15">${esc(l)}</text>`).join('')}
 <text x="28" y="182" class="mono faint" font-size="12">${esc(tags)}</text>
 <g transform="translate(392,20)">${motif}</g>
 `;
@@ -328,6 +337,7 @@ write('card-resilient', (t) => card('resilient', t, {
   title: 'resilient-llm',
   lines: ['Keeps LLM calls working when a', 'provider fails: retries, a circuit', 'breaker, fallback and streaming.'],
   tags: 'TypeScript · npm · no dependencies · 70 tests',
+  accent: t.violet,
   css: `@keyframes m1{0%{transform:translate(0,0);opacity:0}5%{opacity:1}30%{transform:translate(64px,0)}44%{transform:translate(64px,0)}62%{transform:translate(64px,84px)}88%{transform:translate(150px,84px);opacity:1}94%,100%{transform:translate(150px,84px);opacity:0}}
 .m1{animation:m1 3.6s ease-in-out infinite}
 @keyframes x1{0%,28%{opacity:0}32%,90%{opacity:1}100%{opacity:0}}.x1{animation:x1 3.6s linear infinite}
@@ -337,13 +347,13 @@ write('card-resilient', (t) => card('resilient', t, {
   motif: `<text x="0" y="22" class="mono faint" font-size="11">anthropic</text>
 <line x1="0" y1="40" x2="170" y2="40" stroke="${t.line}" stroke-width="2" class="lane"/>
 <text x="0" y="106" class="mono faint" font-size="11">openai</text>
-<line x1="0" y1="124" x2="170" y2="124" stroke="${t.line}" stroke-width="2"/>
+<line x1="0" y1="124" x2="170" y2="124" stroke="${t.ok}" stroke-opacity=".5" stroke-width="2"/>
 <path d="M70 40 V124" stroke="${t.line}" stroke-dasharray="3 4"/>
 <g class="x1" stroke="${t.ko}" stroke-width="2.5" stroke-linecap="round"><line x1="80" y1="30" x2="96" y2="50"/><line x1="96" y1="30" x2="80" y2="50"/></g>
-<circle cx="6" cy="40" r="6.5" fill="${t.ink}" class="m1"/>
+<circle cx="6" cy="40" r="6.5" fill="${t.blue}" class="m1"/>
 <text x="160" y="116" class="mono okm" font-size="14" fill="${t.ok}">✓</text>
 <circle cx="36" cy="152" r="3" fill="${t.ink}"/><circle cx="76" cy="152" r="3" fill="${t.ink}"/>
-<line x1="36" y1="152" x2="76" y2="152" stroke="${t.ink}" stroke-width="2.5" stroke-linecap="round" class="sw"/>
+<line x1="36" y1="152" x2="76" y2="152" stroke="${t.violet}" stroke-width="2.5" stroke-linecap="round" class="sw"/>
 <text x="90" y="156" class="mono faint" font-size="11">breaker</text>`,
 }));
 
@@ -356,13 +366,14 @@ write('card-evals', (t) => {
     const d = r2(i * 0.11);
     m += `<rect x="${x}" y="${y}" width="21" height="21" rx="4" fill="none" stroke="${t.line}"/>`;
     if (fails.has(i)) m += `<g class="c" style="animation-delay:${d}s" stroke="${t.ko}" stroke-width="2" stroke-linecap="round"><line x1="${x + 6}" y1="${y + 6}" x2="${x + 15}" y2="${y + 15}"/><line x1="${x + 15}" y1="${y + 6}" x2="${x + 6}" y2="${y + 15}"/></g>`;
-    else m += `<rect x="${x + 4}" y="${y + 4}" width="13" height="13" rx="2" fill="${t.ink}" class="c" style="animation-delay:${d}s"/>`;
+    else m += `<rect x="${x + 4}" y="${y + 4}" width="13" height="13" rx="2" fill="${t.ok}" class="c" style="animation-delay:${d}s"/>`;
   }
   m += `<text x="0" y="158" class="mono faint" font-size="11">30 test cases, run in CI</text>`;
   return card('evals', t, {
     title: 'agent-evals',
     lines: ['A RAG agent over the Node.js docs,', 'with 30 test cases to check whether', 'its answers can be trusted.'],
     tags: 'TypeScript · LLM-as-judge · prompt injection · CI',
+    accent: t.ok,
     css: `.c{opacity:0;animation:c 6s ease-out infinite}@keyframes c{0%{opacity:0}4%,80%{opacity:1}90%,100%{opacity:0}}`,
     motif: m,
   });
@@ -373,17 +384,18 @@ write('card-mcp', (t) => {
   let m = '';
   for (let i = 0; i < 4; i++) {
     const p = i * 15;
-    m += `<rect x="${10 + p}" y="${p}" width="${150 - 2 * p}" height="${150 - 2 * p}" rx="${12 - i * 2}" class="st ly" style="animation-delay:${r2(0.25 + i * 0.22)}s"/>`;
+    m += `<rect x="${10 + p}" y="${p}" width="${150 - 2 * p}" height="${150 - 2 * p}" rx="${12 - i * 2}" class="ly" style="stroke:${[t.violet, t.blue, t.cyan, t.ok][i]};fill:none;animation-delay:${r2(0.25 + i * 0.22)}s"/>`;
   }
-  m += `<circle cx="85" cy="75" r="9" fill="none" stroke="${t.ink}" stroke-width="2" class="core"/>`;
-  m += `<circle cx="85" cy="-14" r="5" fill="${t.ink}" class="good"/>`;
+  m += `<circle cx="85" cy="75" r="9" fill="${t.ok}" fill-opacity=".25" stroke="${t.ok}" stroke-width="2" class="core"/>`;
+  m += `<circle cx="85" cy="-14" r="5" fill="${t.cyan}" class="good"/>`;
   m += `<circle cx="85" cy="168" r="5" fill="${t.ko}" class="bad"/>`;
   m += `<rect x="40" y="146" width="90" height="8" rx="4" fill="${t.ko}" class="hit"/>`;
   return card('mcp', t, {
     title: 'github-triage-mcp',
     lines: ['An MCP server that triages GitHub', 'issues without handing the AI the', 'keys to the repo. Four safety layers.'],
     tags: 'MCP · TypeScript · read-only by default',
-    css: `.ly{stroke-width:1.5;opacity:.2;animation:ly 5s ease-in-out infinite}@keyframes ly{0%,4%{opacity:.2}8%,14%{opacity:1}22%,100%{opacity:.2}}
+    accent: t.blue,
+    css: `.ly{stroke-width:2;opacity:.25;animation:ly 5s ease-in-out infinite}@keyframes ly{0%,4%{opacity:.2}8%,14%{opacity:1}22%,100%{opacity:.2}}
 .good{animation:good 5s ease-in-out infinite}@keyframes good{0%{transform:translateY(0);opacity:0}4%{opacity:1}30%{transform:translateY(89px);opacity:1}40%,100%{transform:translateY(89px);opacity:0}}
 .core{transform-box:fill-box;transform-origin:center;animation:core 5s ease-out infinite}@keyframes core{0%,28%{transform:scale(1);opacity:.4}34%{transform:scale(1.6);opacity:1}46%,100%{transform:scale(1);opacity:.4}}
 .bad{animation:bad 5s ease-in infinite}@keyframes bad{0%,52%{transform:translateY(0);opacity:0}56%{opacity:1}66%{transform:translateY(-12px);opacity:1}78%,100%{transform:translateY(-12px);opacity:0}}
@@ -398,15 +410,16 @@ write('card-serp', (t) => {
   let m = '';
   for (let i = 0; i < 10; i++) {
     m += `<text x="0" y="${i * 15 + 8}" class="mono faint" font-size="9">${i + 1}</text>`;
-    m += `<rect x="14" y="${i * 15}" width="${38 - i * 2}" height="8" rx="2" fill="${t.ink}" opacity=".8"/>`;
-    m += `<rect x="${136 + i * 2}" y="${map[i] * 15}" width="${38 - i * 2}" height="8" rx="2" fill="${t.faint}"/>`;
-    m += `<path d="M56 ${i * 15 + 4}C94 ${i * 15 + 4} 94 ${map[i] * 15 + 4} 132 ${map[i] * 15 + 4}" class="st ln" stroke-width="1" style="animation-delay:${i * 0.12}s"/>`;
+    m += `<rect x="14" y="${i * 15}" width="${38 - i * 2}" height="8" rx="2" fill="${t.blue}"/>`;
+    m += `<rect x="${136 + i * 2}" y="${map[i] * 15}" width="${38 - i * 2}" height="8" rx="2" fill="${t.cyan}"/>`;
+    m += `<path d="M56 ${i * 15 + 4}C94 ${i * 15 + 4} 94 ${map[i] * 15 + 4} 132 ${map[i] * 15 + 4}" class="ln" fill="none" stroke="${t.pink}" stroke-width="1.2" style="animation-delay:${i * 0.12}s"/>`;
   }
   m += `<text x="14" y="168" class="mono faint" font-size="10">Google</text><text x="142" y="168" class="mono faint" font-size="10">Bing</text>`;
   return card('serp', t, {
     title: 'serp-compare',
     lines: ['Google and Bing top 10, side by side,', 'for the same search. 24 h cache, and', 'the demo runs without an API key.'],
     tags: 'TypeScript · Docker · rate limiting',
+    accent: t.orange,
     css: `.ln{stroke-dasharray:140;stroke-dashoffset:140;opacity:.6;animation:ln 4.5s ease-out infinite}@keyframes ln{0%{stroke-dashoffset:140}35%,85%{stroke-dashoffset:0}100%{stroke-dashoffset:0;opacity:0}}`,
     motif: m,
   });
@@ -421,17 +434,17 @@ write('evals-story', (t) => {
     const y = 96 + i * 46;
     b += `<text x="60" y="${y + 12}" class="sans ink" font-size="15">${esc(lab)}</text>`;
     b += `<rect x="460" y="${y}" width="540" height="6" rx="3" fill="${t.line}" opacity=".6"/>`;
-    b += `<rect x="460" y="${y}" width="${Math.max(3, v1 * 5.4)}" height="6" rx="3" fill="${t.faint}" class="gr" style="animation-delay:${0.2 + i * 0.15}s"/>`;
+    b += `<rect x="460" y="${y}" width="${Math.max(3, v1 * 5.4)}" height="6" rx="3" fill="${t.orange}" class="gr" style="animation-delay:${0.2 + i * 0.15}s"/>`;
     b += `<rect x="460" y="${y + 10}" width="540" height="6" rx="3" fill="${t.line}" opacity=".6"/>`;
-    b += `<rect x="460" y="${y + 10}" width="${Math.max(3, v2 * 5.4)}" height="6" rx="3" fill="${t.ink}" class="gr" style="animation-delay:${0.35 + i * 0.15}s"/>`;
-    b += `<text x="1020" y="${y + 7}" class="mono faint" font-size="12">v1 ${v1}%</text><text x="1020" y="${y + 18}" class="mono ink" font-size="12">v2 ${v2}%</text>`;
+    b += `<rect x="460" y="${y + 10}" width="${Math.max(3, v2 * 5.4)}" height="6" rx="3" fill="${t.violet}" class="gr" style="animation-delay:${0.35 + i * 0.15}s"/>`;
+    b += `<text x="1020" y="${y + 7}" class="mono" fill="${t.orange}" font-size="12">v1 ${v1}%</text><text x="1020" y="${y + 18}" class="mono" fill="${t.violet}" font-size="12">v2 ${v2}%</text>`;
   });
   const css = `.gr{transform-box:fill-box;transform-origin:left;animation:gr 1.6s cubic-bezier(.2,.7,.2,1) both}@keyframes gr{from{transform:scaleX(0)}to{transform:scaleX(1)}}`;
   const body = `
 <text x="60" y="44" class="mono faint" font-size="13">agent-evals  ·  30 cases  ·  gemini-3.1-flash-lite  ·  October 2026</text>
 <text x="60" y="70" class="sans ink" font-size="20">v1 = basic prompt, v2 = stricter prompt</text>
 ${b}
-<text x="60" y="282" class="mono faint" font-size="12">▪ v1</text><text x="110" y="282" class="mono ink" font-size="12">▪ v2</text>
+<text x="60" y="282" class="mono" fill="${t.orange}" font-size="12">▪ v1</text><text x="110" y="282" class="mono" fill="${t.violet}" font-size="12">▪ v2</text>
 `;
   return svg(W, H, t, css, body, 'agent-evals results, v1 vs v2');
 });
@@ -447,32 +460,32 @@ write('graph', (t) => {
     css += `@keyframes ${id}{0%,${a}%{stroke-dashoffset:1;opacity:1}${b}%,88%{stroke-dashoffset:0;opacity:1}95%,100%{stroke-dashoffset:0;opacity:0}}#${id}{stroke-dasharray:1;stroke-dashoffset:1;animation:${id} ${T}s linear infinite}`;
     body += `<path id="${id}" d="${d}" pathLength="1" class="ln" stroke="${col}"/>`;
   };
-  line('gm', 'M60 115 H1140', 60, 1140, t.faint);
-  line('gf', 'M240 115 C270 115 270 65 300 65 H540 C570 65 570 115 600 115', 240, 600, t.ink);
-  line('gx', 'M660 115 C690 115 690 165 720 165 H900 C930 165 930 115 960 115', 660, 960, t.ink);
+  line('gm', 'M60 115 H1140', 60, 1140, t.blue);
+  line('gf', 'M240 115 C270 115 270 65 300 65 H540 C570 65 570 115 600 115', 240, 600, t.violet);
+  line('gx', 'M660 115 C690 115 690 165 720 165 H900 C930 165 930 115 960 115', 660, 960, t.pink);
   let n = 0;
-  const dot = (x, y, big = false) => {
+  const dot = (x, y, big = false, col = t.blue) => {
     const id = `c${n++}`, a = at(x);
     css += `@keyframes ${id}{0%,${a}%{opacity:0;transform:scale(.2)}${r2(a + 2)}%,88%{opacity:1;transform:scale(1)}95%,100%{opacity:0}}#${id}{opacity:0;transform-box:fill-box;transform-origin:center;animation:${id} ${T}s ease-out infinite}`;
     body += big
-      ? `<circle id="${id}" cx="${x}" cy="${y}" r="8" fill="${t.bg}" stroke="${t.ink}" stroke-width="2.5"/>`
-      : `<circle id="${id}" cx="${x}" cy="${y}" r="6" fill="${t.ink}"/>`;
+      ? `<circle id="${id}" cx="${x}" cy="${y}" r="8" fill="${t.bg}" stroke="${col}" stroke-width="2.5"/>`
+      : `<circle id="${id}" cx="${x}" cy="${y}" r="6" fill="${col}"/>`;
   };
-  const label = (x, y, txt, from, anchor = 'start') => {
+  const label = (x, y, txt, from, anchor = 'start', col = t.muted) => {
     const id = `t${n++}`, a = at(from);
     css += `@keyframes ${id}{0%,${a}%{opacity:0}${r2(a + 3)}%,88%{opacity:1}95%,100%{opacity:0}}#${id}{opacity:0;animation:${id} ${T}s linear infinite}`;
-    body += `<text id="${id}" x="${x}" y="${y}" text-anchor="${anchor}" class="mono muted" font-size="12">${esc(txt)}</text>`;
+    body += `<text id="${id}" x="${x}" y="${y}" text-anchor="${anchor}" class="mono" fill="${col}" font-size="12">${esc(txt)}</text>`;
   };
   [60, 150, 240].forEach((x) => dot(x, 115));
-  [330, 420, 510].forEach((x) => dot(x, 65));
-  dot(600, 115, true); dot(660, 115);
-  [750, 840].forEach((x) => dot(x, 165));
-  dot(960, 115, true); dot(1050, 115); dot(1140, 115);
-  label(60, 143, 'main', 60);
-  label(300, 47, 'evals/v2', 300);
-  label(720, 195, 'fix/empty-answers', 720);
-  label(1140, 92, 'HEAD', 1140, 'middle');
-  css += `.head{fill:none;stroke:${t.ink};stroke-width:1.5;transform-box:fill-box;transform-origin:center;opacity:0;animation:head 2s ease-out ${r2((END / 100) * T)}s infinite}@keyframes head{0%{transform:scale(1);opacity:.8}100%{transform:scale(2.6);opacity:0}}`;
+  [330, 420, 510].forEach((x) => dot(x, 65, false, t.violet));
+  dot(600, 115, true, t.violet); dot(660, 115);
+  [750, 840].forEach((x) => dot(x, 165, false, t.pink));
+  dot(960, 115, true, t.pink); dot(1050, 115); dot(1140, 115, false, t.ok);
+  label(60, 143, 'main', 60, 'start', t.blue);
+  label(300, 47, 'evals/v2', 300, 'start', t.violet);
+  label(720, 195, 'fix/empty-answers', 720, 'start', t.pink);
+  label(1140, 92, 'HEAD', 1140, 'middle', t.ok);
+  css += `.head{fill:none;stroke:${t.ok};stroke-width:1.5;transform-box:fill-box;transform-origin:center;opacity:0;animation:head 2s ease-out ${r2((END / 100) * T)}s infinite}@keyframes head{0%{transform:scale(1);opacity:.8}100%{transform:scale(2.6);opacity:0}}`;
   body += `<circle cx="1140" cy="115" r="7" class="head"/>`;
   return svg(W, H, t, css, body, 'Animated git graph with two branches merging into main');
 });
@@ -481,9 +494,9 @@ write('graph', (t) => {
 write('footer', (t) => {
   const W = 1200, H = 110;
   const css = `.tr{stroke:${t.line};stroke-width:1.5;fill:none}
-.pu{stroke:${t.ink};stroke-width:2;fill:none;stroke-dasharray:90 1400;animation:pu 4s linear infinite}@keyframes pu{from{stroke-dashoffset:90}to{stroke-dashoffset:-1400}}`;
+.pu{stroke:url(#fg);stroke-width:2.5;fill:none;stroke-dasharray:90 1400;animation:pu 4s linear infinite}@keyframes pu{from{stroke-dashoffset:90}to{stroke-dashoffset:-1400}}`;
   const d = `M0 50H520L540 50L552 22L566 78L580 34L590 50H1200`;
-  const body = `<path d="${d}" class="tr"/><path d="${d}" class="pu"/>
+  const body = `<linearGradient id="fg" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1200" y2="0"><stop offset="0" stop-color="${t.violet}"/><stop offset=".5" stop-color="${t.pink}"/><stop offset="1" stop-color="${t.orange}"/></linearGradient><path d="${d}" class="tr"/><path d="${d}" class="pu"/>
 <text x="600" y="100" text-anchor="middle" class="mono faint" font-size="13">kenzoob  ·  npm: @kenzoobryan27</text>`;
   return svg(W, H, t, css, body, 'Footer');
 });
