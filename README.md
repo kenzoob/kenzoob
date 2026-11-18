@@ -5,7 +5,7 @@
 
 Hi, I'm Kenzo, a fullstack developer. Most of what I write is TypeScript and Node.js, with Python, Flutter or C when a project needs it.
 
-Outside of work I build things mainly to understand them. I wrote a shell to see what actually happens between `fork` and `exec`, a small game engine to get a game loop right, and a few tools around the APIs I use every day.
+These days I mostly build small tools around AI agents: local MCP servers, CLIs and agents that each fix one problem developers actually run into. Before that I built things mainly to understand them: a shell to see what happens between `fork` and `exec`, and a small game engine to get a game loop right.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/night-dark.svg">
@@ -20,12 +20,12 @@ Outside of work I build things mainly to understand them. I wrote a shell to see
 ## Projects
 
 <p>
+<a href="https://github.com/kenzoob/github-triage-mcp"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-mcp-dark.svg"><img alt="github-triage-mcp" src="assets/card-mcp-light.svg" width="49%"></picture></a>
+<a href="https://github.com/kenzoob/Resilient-llm"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-resilient-dark.svg"><img alt="resilient-llm" src="assets/card-resilient-light.svg" width="49%"></picture></a>
 <a href="https://github.com/kenzoob/my-engine"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-engine-dark.svg"><img alt="my-engine" src="assets/card-engine-light.svg" width="49%"></picture></a>
 <a href="https://github.com/kenzoob/minishell"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-shell-dark.svg"><img alt="minishell" src="assets/card-shell-light.svg" width="49%"></picture></a>
 <a href="https://github.com/kenzoob/playvibes"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-vibes-dark.svg"><img alt="playvibes" src="assets/card-vibes-light.svg" width="49%"></picture></a>
 <a href="https://github.com/kenzoob/Serp-compare"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-serp-dark.svg"><img alt="serp-compare" src="assets/card-serp-light.svg" width="49%"></picture></a>
-<a href="https://github.com/kenzoob/Resilient-llm"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-resilient-dark.svg"><img alt="resilient-llm" src="assets/card-resilient-light.svg" width="49%"></picture></a>
-<a href="https://github.com/kenzoob/github-triage-mcp"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-mcp-dark.svg"><img alt="github-triage-mcp" src="assets/card-mcp-light.svg" width="49%"></picture></a>
 </p>
 
 <br>
